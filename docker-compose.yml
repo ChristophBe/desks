@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: password123
+      POSTGRES_USER: postgres
+      POSTGRES_DB: rooms_api
+
+  api:
+    build: ./rooms-api
+    environment:
+      DB_HOST: "rooms-db"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "password123"
+      DB_NAME: "rooms_api"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  web-app:
+    build: ./rooms-web-app
+    ports:
+      - "8081:5000"
+    depends_on:
+      - api
+volumes:
+  data:
