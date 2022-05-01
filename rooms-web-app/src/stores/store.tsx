@@ -2,11 +2,15 @@ import Vuex, {ActionContext, Store, useStore as baseUseStore} from "vuex";
 
 import {InjectionKey} from "vue";
 import User from "../models/User";
+import Booking from "@/models/Booking";
+import Room from "@/models/Room";
 
 
 export interface State {
     user: User|null
     loading: boolean
+    bookings: Array<Booking>
+    rooms: Array<Room>
 }
 
 // define injection key
@@ -16,7 +20,9 @@ export const store = new Vuex.Store<State>({
     state (){
         return {
             user: null,
-            loading: false
+            loading: false,
+            rooms: [],
+            bookings: []
         }
     },
     mutations: {
@@ -30,6 +36,12 @@ export const store = new Vuex.Store<State>({
         },
         loading(state:State){
             state.loading = true
+        },
+        setRooms(state:State, rooms: Array<Room>){
+            state.rooms = rooms
+        },
+        setBookings(state:State, bookings: Array<Booking>){
+            state.bookings = bookings
         }
     },
     actions:{
@@ -64,7 +76,63 @@ export const store = new Vuex.Store<State>({
                 commit('logout')
             }
 
+        },
+        async fetchRooms({commit, state}: ActionContext<State, State>) {
+
+            if(state.rooms.length > 0){
+                return
+            }
+            const response = await fetch("/api/v1.0/rooms" )
+            if(response.status >= 400 ){
+                console.log("Failed to fetch rooms", response.status )
+                return
+            }
+            try {
+                const rooms = await response.json()
+                commit('setRooms', rooms)
+            }
+            catch (e){
+               console.log("Failed to fetch rooms", e)
+            }
+
+        },
+        async fetchBookings({commit, state}: ActionContext<State, State>) {
+
+            if(!state.user){
+                return
+            }
+            const response = await fetch(`/api/v1.0/users/${state.user.id}/bookings` )
+            if(response.status >= 400 ){
+                console.log("Failed to fetch bookinges", response.status )
+                return
+            }
+            try {
+                const bookings = await response.json()
+                commit('setBookings', bookings)
+            }
+            catch (e){
+               console.log("Failed to fetch bookings", e)
+            }
+
+        },
+        async bookDesk({dispatch, state}: ActionContext<State, State>, booking:Booking) {
+
+            const response = await postData("/api/v1.0/bookings",booking )
+            if(response.status >= 400 ){
+                console.log("Failed to create booking", response.status )
+                return
+            }
+            try {
+                await response.json()
+                await dispatch("fetchBookings")
+            }
+            catch (e){
+               console.log("Failed to create booking", e)
+            }
+
         }
+
+
     }
 
 })

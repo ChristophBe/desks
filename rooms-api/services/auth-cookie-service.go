@@ -40,6 +40,7 @@ func (a authCookieServiceImpl) SetAuthCookieFor(user models.User, writer http.Re
 		Value:    authToken,
 		SameSite: http.SameSiteStrictMode,
 		Secure:   true,
+		Path:     "/api",
 	}
 	request.AddCookie(&authCookie)
 	http.SetCookie(writer, &authCookie)

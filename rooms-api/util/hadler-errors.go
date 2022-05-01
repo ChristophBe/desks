@@ -44,3 +44,11 @@ func Unauthorized(err error) error {
 		Status:  http.StatusUnauthorized,
 	}
 }
+
+func Forbidden(err error) error {
+	return HandlerError{
+		Cause:   err,
+		Message: "forbidden",
+		Status:  http.StatusForbidden,
+	}
+}

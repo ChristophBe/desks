@@ -17,6 +17,10 @@ func main() {
 	router := mux.NewRouter()
 	router.Path(urlPrefix + "/users/login").HandlerFunc(handlers.PostUsersLogin).Methods(http.MethodPost)
 	router.Path(urlPrefix + "/users/me").Handler(withAuth(handlers.GetUsersMe)).Methods(http.MethodGet)
+	router.Path(urlPrefix + "/rooms").Handler(withAuth(handlers.GetAllRooms)).Methods(http.MethodGet)
+
+	router.Path(urlPrefix + "/users/{id}/bookings").Handler(withAuth(handlers.GetBookingsByUser)).Methods(http.MethodGet)
+	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
 
 	if err := data.InitDatabase(); err != nil {
 		log.Fatal("Failed initialize Database", err)

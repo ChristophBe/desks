@@ -60,6 +60,8 @@ func InitDatabase() error {
 	}
 
 	user := new(models.User)
+	room := new(models.Room)
+	booking := new(models.Booking)
 
-	return db.AutoMigrate(user)
+	return db.AutoMigrate(user, room, booking)
 }

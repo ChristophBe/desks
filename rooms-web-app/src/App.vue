@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-card-title>Rooms</v-card-title>
+      <v-card-title>Desks</v-card-title>
       <v-spacer></v-spacer>
       <v-avatar
           v-if="user"
@@ -20,9 +20,7 @@
         <v-card v-else-if="loading">
           <v-card-title>Wait for it</v-card-title>
         </v-card>
-        <v-card v-else>
-          <v-card-title>You are logged in!</v-card-title>
-        </v-card>
+        <BookingsView v-else></BookingsView>
       </v-container>
 
 
@@ -34,16 +32,20 @@
 import { Options, Vue } from 'vue-class-component';
 import GetUser from './components/GetUser.vue';
 import {mapState} from "vuex";
+import Bookings from "./components/BookingsView.vue";
+import BookingsView from "@/components/BookingsView.vue";
 
 @Options({
   components: {
+    BookingsView,
+    Bookings,
     GetUser,
   },
 
   mounted() {
     this.$store.dispatch("fetchCurrentUser")
   },
-  computed: mapState(['user',"loading"])
+  computed: mapState(['user','loading'])
 })
 export default class App extends Vue{}
 </script>

@@ -63,7 +63,7 @@ func ReadJsonBody(request *http.Request, value interface{}) error {
 	return nil
 }
 
-func getIntegerUrlParameter(request *http.Request, key string) (_ int64, err error) {
+func GetIntegerUrlParameter(request *http.Request, key string) (_ int64, err error) {
 	params := mux.Vars(request)
 	value, err := strconv.Atoi(params[key])
 	if err != nil {
