@@ -15,7 +15,7 @@
 
 
       <v-container>
-        <FakeLogin v-if="!user && !loading"/>
+        <GetUser v-if="!user && !loading"/>
 
         <v-card v-else-if="loading">
           <v-card-title>Wait for it</v-card-title>
@@ -30,21 +30,22 @@
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import GetUser from './components/GetUser.vue';
+import {mapState} from "vuex";
 
-import FakeLogin from "@/components/GetUser";
-import { mapState } from 'vuex'
-
-export default {
-  username: 'App',
-
+@Options({
   components: {
-    FakeLogin,
+    GetUser,
   },
 
   mounted() {
     this.$store.dispatch("fetchCurrentUser")
   },
   computed: mapState(['user',"loading"])
-}
+})
+export default class App extends Vue{}
 </script>
+
+

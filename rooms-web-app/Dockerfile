@@ -1,13 +1,21 @@
 
 # build environment
-FROM node:17 as build
+FROM node:16 as build
 WORKDIR /app
 
 RUN yarn
 
-COPY . .
+COPY package.json package.json
 
 RUN yarn install
+
+COPY babel.config.js babel.config.js
+COPY jsconfig.json jsconfig.json
+COPY tsconfig.json tsconfig.json
+COPY vue.config.js vue.config.js
+COPY public public
+COPY src src
+
 
 RUN yarn run build
 

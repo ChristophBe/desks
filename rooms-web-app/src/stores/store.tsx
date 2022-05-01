@@ -1,27 +1,39 @@
-import Vuex from 'vuex';
+import Vuex, {ActionContext, Store, useStore as baseUseStore} from "vuex";
 
-export const store =  new Vuex.Store({
-    state () {
+import {InjectionKey} from "vue";
+import User from "../models/User";
+
+
+export interface State {
+    user: User|null
+    loading: boolean
+}
+
+// define injection key
+export const key: InjectionKey<Store<State>> = Symbol()
+
+export const store = new Vuex.Store<State>({
+    state (){
         return {
             user: null,
             loading: false
         }
     },
     mutations: {
-        login (state ,user) {
+        login (state:State ,user:User) {
             state.user = user
             state.loading = false
         },
-        logout (state) {
+        logout (state:State) {
             state.user = null
             state.loading = false
         },
-        loading(state){
+        loading(state:State){
             state.loading = true
         }
     },
     actions:{
-        async login({commit}, user) {
+        async login({commit}:ActionContext<State, State>, user:User) {
             commit('loading')
 
             const response = await postData("/api/v1.0/users/login",user)
@@ -36,7 +48,7 @@ export const store =  new Vuex.Store({
                 commit('logout')
             }
         },
-        async fetchCurrentUser({commit}) {
+        async fetchCurrentUser({commit}: ActionContext<State, State>) {
             commit('loading')
 
             const response = await fetch("/api/v1.0/users/me")
@@ -74,4 +86,8 @@ async function postData(url = '', data = {}) {
         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data) // body data type must match "Content-Type" header
     });
+}
+
+export function useStore () {
+    return baseUseStore(key)
 }

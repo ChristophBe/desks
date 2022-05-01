@@ -53,26 +53,22 @@
 </template>
 
 <script>
-export default {
-  username: "FakeLogin",
-  data: () => ({
-    valid: false,
-    username: '',
-    firstname: '',
-    lastname: '',
-  }),
+import {Vue} from "vue-class-component";
 
-  methods: {
-    submit () {
-      this.$refs.form.validate()
-      this.$store.dispatch('login', {
-        username: this.username,
-        firstname: this.firstname,
-        lastname: this.lastname
-      })
-    },
+export default class GetUser extends Vue {
+  valid= false;
+  username= '';
+  firstname= '';
+  lastname='';
 
-  },
+  submit () {
+    this.$refs.form.validate()
+    this.$store.dispatch('login', {
+      username: this.username,
+      firstname: this.firstname,
+      lastname: this.lastname
+    })
+  }
 }
 </script>
 
