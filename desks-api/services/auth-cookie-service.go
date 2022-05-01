@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"github.com/ChristophBe/rooms/rooms-api/models"
+	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/golang-jwt/jwt"
 	"net/http"
 	"time"

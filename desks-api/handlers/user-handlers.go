@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/ChristophBe/rooms/rooms-api/data"
-	"github.com/ChristophBe/rooms/rooms-api/middlewares"
-	"github.com/ChristophBe/rooms/rooms-api/models"
-	"github.com/ChristophBe/rooms/rooms-api/services"
-	"github.com/ChristophBe/rooms/rooms-api/util"
+	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/middlewares"
+	"github.com/ChristophBe/desks/desks-api/models"
+	"github.com/ChristophBe/desks/desks-api/services"
+	"github.com/ChristophBe/desks/desks-api/util"
 	"log"
 	"net/http"
 )

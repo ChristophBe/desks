@@ -3,7 +3,7 @@ package services
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/ChristophBe/rooms/rooms-api/util"
+	"github.com/ChristophBe/desks/desks-api/util"
 	"github.com/golang-jwt/jwt"
 	"time"
 )

@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/ChristophBe/rooms/rooms-api/data"
-	"github.com/ChristophBe/rooms/rooms-api/handlers"
-	"github.com/ChristophBe/rooms/rooms-api/middlewares"
-	"github.com/ChristophBe/rooms/rooms-api/util"
+	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/handlers"
+	"github.com/ChristophBe/desks/desks-api/middlewares"
+	"github.com/ChristophBe/desks/desks-api/util"
 	"log"
 	"net/http"
 )

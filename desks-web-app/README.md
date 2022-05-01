@@ -1,4 +1,4 @@
-# rooms-web-app
+# desks-web-app
 
 ## Project setup
 ```

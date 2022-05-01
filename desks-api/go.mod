@@ -1,4 +1,4 @@
-module github.com/ChristophBe/rooms/rooms-api
+module github.com/ChristophBe/desks/desks-api
 
 go 1.16
 

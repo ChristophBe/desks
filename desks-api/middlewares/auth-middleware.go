@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"context"
-	"github.com/ChristophBe/rooms/rooms-api/data"
-	"github.com/ChristophBe/rooms/rooms-api/services"
-	"github.com/ChristophBe/rooms/rooms-api/util"
+	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/services"
+	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
 )
 

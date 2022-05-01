@@ -2,7 +2,7 @@ package data
 
 import (
 	"context"
-	"github.com/ChristophBe/rooms/rooms-api/models"
+	"github.com/ChristophBe/desks/desks-api/models"
 )
 
 type UserRepository interface {

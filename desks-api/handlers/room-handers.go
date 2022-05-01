@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/ChristophBe/rooms/rooms-api/data"
-	"github.com/ChristophBe/rooms/rooms-api/util"
+	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
 )
 
