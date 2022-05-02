@@ -7,6 +7,7 @@ import (
 	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
+	"time"
 )
 
 func PostBooking(writer http.ResponseWriter, request *http.Request) {
@@ -85,7 +86,44 @@ func GetBookingsByUser(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err = util.JsonResponseWriter(bookings, http.StatusAccepted, writer, request); err != nil {
+	if err = util.JsonResponseWriter(bookings, http.StatusOK, writer, request); err != nil {
+		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
+	}
+}
+func GetBookingsByRoomAndDate(writer http.ResponseWriter, request *http.Request) {
+
+	ctx := request.Context()
+
+	roomId, err := util.GetIntegerUrlParameter(request, "id")
+
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	dateQueryParameter := request.URL.Query().Get("date")
+	if dateQueryParameter == "" {
+		err = util.NotFound(fmt.Errorf("dateQueryParameter not set"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	date, err := time.Parse("2006-01-02", dateQueryParameter)
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	bookings, err := data.NewBookingRepository().FetchByRoomAndDate(ctx, roomId, date)
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if err = util.JsonResponseWriter(bookings, http.StatusOK, writer, request); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
