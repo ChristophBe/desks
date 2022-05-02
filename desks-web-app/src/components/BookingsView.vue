@@ -36,16 +36,16 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-if="bookings.length  <= 0">
-        <td colspan="3">
+      <tr v-if="upcomingBookings.length  <= 0">
+        <td colspan="4">
           <v-alert class="mt-2 mb-2">
             You have currently no upcoming desk bookings.
           </v-alert>
         </td>
       </tr>
       <tr v-else
-          v-for="item in bookings"
-          :key="item.name"
+          v-for="item in upcomingBookings"
+          :key="item.id"
       >
         <td>{{ item.room.name }}</td>
         <td>{{ formatDate(item.start)}}</td>
@@ -60,7 +60,7 @@
 <script>
 import AddBookingForm from "@/components/AddBookingForm";
 import {defineComponent} from "vue";
-import {mapState} from "vuex";
+import {mapGetters} from "vuex";
 import moment from "moment";
 
 
@@ -70,7 +70,7 @@ export default defineComponent({
   data:()=>({
     dialog: false
   }),
-  computed: mapState(['bookings']),
+  computed: mapGetters(['upcomingBookings']),
   mounted() {
     this.$store.dispatch("fetchBookings")
   },

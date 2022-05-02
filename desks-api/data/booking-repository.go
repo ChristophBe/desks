@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"github.com/ChristophBe/desks/desks-api/models"
+	"time"
 )
 
 type BookingRepository interface {
@@ -21,7 +22,7 @@ func (b bookingRepositoryImpl) FetchByUserId(ctx context.Context, userId int64) 
 	if err != nil {
 		return
 	}
-	err = db.Preload("User").Preload("Room").Where("user_id = ?", userId).Order("start").Find(&bookings).Error
+	err = db.Preload("User").Preload("Room").Where("user_id = ?", userId, time.Now()).Order("start").Find(&bookings).Error
 	return
 }
 

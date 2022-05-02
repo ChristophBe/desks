@@ -4,6 +4,7 @@ import {InjectionKey} from "vue";
 import User from "../models/User";
 import Booking from "@/models/Booking";
 import Room from "@/models/Room";
+import moment from "moment";
 
 
 export interface State {
@@ -42,6 +43,11 @@ export const store = new Vuex.Store<State>({
         },
         setBookings(state:State, bookings: Array<Booking>){
             state.bookings = bookings
+        }
+    },
+    getters:{
+        upcomingBookings(state:State) {
+            return state.bookings.filter(booking => moment(booking.end).isAfter(moment.now()))
         }
     },
     actions:{

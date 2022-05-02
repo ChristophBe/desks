@@ -19,7 +19,7 @@ func initConnection() (db *gorm.DB, err error) {
 	host := util.GetStringEnvironmentVariable("DB_HOST", "localhost")
 	username := util.GetStringEnvironmentVariable("DB_USERNAME", "postgres")
 	password := util.GetStringEnvironmentVariable("DB_PASSWORD", "password123")
-	databaseName := util.GetStringEnvironmentVariable("DB_NAME", "rooms_api")
+	databaseName := util.GetStringEnvironmentVariable("DB_NAME", "desks_api")
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s sslmode=disable", host, username, password, databaseName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),
