@@ -56,14 +56,14 @@
 import {Vue} from "vue-class-component";
 
 export default class GetUser extends Vue {
-  valid= false;
-  username= '';
-  firstname= '';
-  lastname='';
+  valid = false;
+  username = '';
+  firstname = '';
+  lastname = '';
 
-  submit () {
+  submit() {
     this.$refs.form.validate()
-    this.$store.dispatch('login', {
+    this.$store.dispatch('user/login', {
       username: this.username,
       firstname: this.firstname,
       lastname: this.lastname

@@ -4,6 +4,7 @@
   >
     <AddBookingForm @close="dialog=false"></AddBookingForm>
   </v-dialog>
+  
   <v-card>
     <v-card-title>
       <div>
@@ -18,42 +19,11 @@
         <v-icon>mdi-plus</v-icon>
       </v-btn>
     </v-card-title>
-    <v-table>
-      <thead>
-      <tr>
-        <th class="text-left">
-          Room
-        </th>
-        <th class="text-left">
-          Date
-        </th>
-        <th class="text-left">
-          Start
-        </th>
-        <th class="text-left">
-          End
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-if="upcomingBookings.length  <= 0">
-        <td colspan="4">
-          <v-alert class="mt-2 mb-2">
-            You have currently no upcoming desk bookings.
-          </v-alert>
-        </td>
-      </tr>
-      <tr v-else
-          v-for="item in upcomingBookings"
-          :key="item.id"
-      >
-        <td>{{ item.room.name }}</td>
-        <td>{{ formatDate(item.start)}}</td>
-        <td>{{ formatTime(item.start) }}</td>
-        <td>{{ formatTime(item.end) }}</td>
-      </tr>
-      </tbody>
-    </v-table>
+
+    <v-alert v-if="upcomingBookings.length  <= 0">
+      You have currently no upcoming desk bookings.
+    </v-alert>
+    <BookingsTable v-else :bookings="upcomingBookings"></BookingsTable>
   </v-card>
 </template>
 
@@ -62,23 +32,24 @@ import AddBookingForm from "@/components/AddBookingForm";
 import {defineComponent} from "vue";
 import {mapGetters} from "vuex";
 import moment from "moment";
+import BookingsTable from "@/components/BookingsTable";
 
 
 export default defineComponent({
-  name:"BookingsView",
-  components: {AddBookingForm},
-  data:()=>({
+  name: "BookingsView",
+  components: {BookingsTable, AddBookingForm},
+  data: () => ({
     dialog: false
   }),
-  computed: mapGetters(['upcomingBookings']),
+  computed: mapGetters('bookings', ['upcomingBookings']),
   mounted() {
-    this.$store.dispatch("fetchBookings")
+    this.$store.dispatch("bookings/fetchBookings")
   },
-  methods:{
-    formatDate(date){
+  methods: {
+    formatDate(date) {
       return moment(date).format("DD.MM.YYYY")
     },
-    formatTime(date){
+    formatTime(date) {
       return moment(date).format("HH:mm")
     }
   }

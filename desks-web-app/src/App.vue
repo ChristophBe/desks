@@ -8,7 +8,10 @@
           color="primary"
           size="48"
       >
-        <span class="white--text text-h5">{{user.firstname.charAt(0).toUpperCase() + user.lastname.charAt(0).toUpperCase()}}</span>
+        <span
+            class="white--text text-h5">{{
+            user.firstname.charAt(0).toUpperCase() + user.lastname.charAt(0).toUpperCase()
+          }}</span>
       </v-avatar>
     </v-app-bar>
     <v-main>
@@ -29,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+import {Options, Vue} from 'vue-class-component';
 import GetUser from './components/GetUser.vue';
 import {mapState} from "vuex";
 import Bookings from "./components/BookingsView.vue";
@@ -43,11 +46,12 @@ import BookingsView from "@/components/BookingsView.vue";
   },
 
   mounted() {
-    this.$store.dispatch("fetchCurrentUser")
+    this.$store.dispatch("user/fetchCurrentUser")
   },
-  computed: mapState(['user','loading'])
+  computed: mapState('user', ['user', 'loading'])
 })
-export default class App extends Vue{}
+export default class App extends Vue {
+}
 </script>
 
 
