@@ -26,6 +26,9 @@ const mutations: MutationTree<BookingsState> = {
 const getters: GetterTree<BookingsState, RootState> = {
     upcomingBookings(state: BookingsState) {
         return state.bookings.filter(booking => moment(booking.end).isAfter(moment.now()))
+    },
+    todaysBookings(state: BookingsState) {
+        return state.bookings.filter(booking => moment(booking.start).diff(moment.now(), 'days') === 0)
     }
 }
 const actions: ActionTree<BookingsState, RootState> = {

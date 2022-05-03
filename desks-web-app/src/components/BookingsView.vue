@@ -4,7 +4,27 @@
   >
     <AddBookingForm @close="dialog=false"></AddBookingForm>
   </v-dialog>
-  
+  <v-card v-if="todaysBookings.length > 0" class="mb-3">
+    <v-card-title>Today</v-card-title>
+
+    <v-expansion-panels>
+      <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
+        <v-expansion-panel-title>
+          <span>{{ booking.room.name }}</span>
+          <v-spacer></v-spacer>
+          <span class="mr-4">
+            {{ formatTime(booking.start) }} - {{ formatTime(booking.end) }}
+          </span>
+
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <AlsoInTheRoom :room-id="booking.room.id" :date="booking.start"></AlsoInTheRoom>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
+
+
+  </v-card>
   <v-card>
     <v-card-title>
       <div>
@@ -33,15 +53,16 @@ import {defineComponent} from "vue";
 import {mapGetters} from "vuex";
 import moment from "moment";
 import BookingsTable from "@/components/BookingsTable";
+import AlsoInTheRoom from "@/components/AlsoInTheRoom";
 
 
 export default defineComponent({
   name: "BookingsView",
-  components: {BookingsTable, AddBookingForm},
+  components: {AlsoInTheRoom, BookingsTable, AddBookingForm},
   data: () => ({
     dialog: false
   }),
-  computed: mapGetters('bookings', ['upcomingBookings']),
+  computed: mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
   mounted() {
     this.$store.dispatch("bookings/fetchBookings")
   },
