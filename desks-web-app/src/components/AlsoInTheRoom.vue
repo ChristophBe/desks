@@ -1,7 +1,7 @@
 <template>
   <v-alert v-if="bookings.length <= 0">There are no other bookings for the office today.</v-alert>
   <v-list v-else>
-    <v-list-item two-line v-for="booking in bookings" :key="booking.id">
+    <v-list-item  class="px-0" two-line v-for="booking in bookings" :key="booking.id">
       <v-list-item-header>
         <v-list-item-title>{{ booking.user.firstname }} {{ booking.user.lastname }}</v-list-item-title>
         <v-list-item-subtitle>{{ formatTime(booking.start) }} - {{

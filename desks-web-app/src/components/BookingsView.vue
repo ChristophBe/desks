@@ -7,21 +7,22 @@
   <v-card v-if="todaysBookings.length > 0" class="mb-3">
     <v-card-title>Today</v-card-title>
 
-    <v-expansion-panels>
-      <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
-        <v-expansion-panel-title>
-          <span>{{ booking.room.name }}</span>
-          <v-spacer></v-spacer>
-          <span class="mr-4">
+      <v-expansion-panels>
+        <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
+          <v-expansion-panel-title class="pl-4 pr-8">
+            <span>{{ booking.room.name }}</span>
+            <v-spacer></v-spacer>
+            <span class="mr-4">
             {{ formatTime(booking.start) }} - {{ formatTime(booking.end) }}
           </span>
 
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <AlsoInTheRoom :room-id="booking.room.id" :date="booking.start"></AlsoInTheRoom>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text class="px-0">
+            <AlsoInTheRoom :room-id="booking.room.id" :date="booking.start"></AlsoInTheRoom>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+
 
 
   </v-card>

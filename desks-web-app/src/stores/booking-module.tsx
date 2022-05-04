@@ -28,7 +28,7 @@ const getters: GetterTree<BookingsState, RootState> = {
         return state.bookings.filter(booking => moment(booking.end).isAfter(moment.now()))
     },
     todaysBookings(state: BookingsState) {
-        return state.bookings.filter(booking => moment(booking.start).diff(moment.now(), 'days') === 0)
+        return state.bookings.filter(booking => moment(booking.start).isSame(moment.now(), 'days'))
     }
 }
 const actions: ActionTree<BookingsState, RootState> = {
