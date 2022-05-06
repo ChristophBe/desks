@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/ChristophBe/desks/desks-api/data"
 	"github.com/ChristophBe/desks/desks-api/handlers"
 	"github.com/ChristophBe/desks/desks-api/middlewares"
+	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"log"
 	"net/http"
@@ -12,6 +14,11 @@ import (
 import "github.com/gorilla/mux"
 
 func main() {
+	if err := data.InitDatabase(); err != nil {
+		log.Fatal("Failed initialize Database", err)
+	}
+	ctx := context.Background()
+	services.NewAutomaticUserDataCleanupService().InitAutomaticUserDataCleaner(ctx)
 
 	urlPrefix := "/api/v1.0"
 	router := mux.NewRouter()
@@ -22,10 +29,6 @@ func main() {
 
 	router.Path(urlPrefix + "/users/{id}/bookings").Handler(withAuth(handlers.GetBookingsByUser)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
-
-	if err := data.InitDatabase(); err != nil {
-		log.Fatal("Failed initialize Database", err)
-	}
 
 	serverPort := util.GetIntEnvironmentVariable("SERVER_PORT", 8080)
 	log.Printf("Starting Server and expose port %d\n", serverPort)

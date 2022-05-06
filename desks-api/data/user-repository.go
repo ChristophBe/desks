@@ -9,6 +9,7 @@ type UserRepository interface {
 	FindByUsername(ctx context.Context, username string) (models.User, error)
 	Save(ctx context.Context, user models.User) (models.User, error)
 	FindById(ctx context.Context, id int64) (models.User, error)
+	DeleteInactiveUser(ctx context.Context, maxAgeInDays int) (int64, error)
 }
 
 func NewUserRepository() UserRepository {
@@ -16,6 +17,15 @@ func NewUserRepository() UserRepository {
 }
 
 type userRepositoryImpl struct{}
+
+func (u userRepositoryImpl) DeleteInactiveUser(ctx context.Context, maxAgeInDays int) (removedUsers int64, err error) {
+	db, err := GetConnection(ctx)
+	if err != nil {
+		return
+	}
+	tx := db.Where("updated < NOW() - ? * INTERVAL '1 days'", maxAgeInDays).Delete(new(models.User))
+	return tx.RowsAffected, tx.Error
+}
 
 func (u userRepositoryImpl) Save(ctx context.Context, user models.User) (stored models.User, err error) {
 	db, err := GetConnection(ctx)
