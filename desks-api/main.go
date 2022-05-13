@@ -29,6 +29,7 @@ func main() {
 
 	router.Path(urlPrefix + "/users/{id}/bookings").Handler(withAuth(handlers.GetBookingsByUser)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
+	router.Path(urlPrefix + "/configuration").Handler(withAuth(handlers.GetFrontendConfiguration)).Methods(http.MethodGet)
 
 	serverPort := util.GetIntEnvironmentVariable("SERVER_PORT", 8080)
 	log.Printf("Starting Server and expose port %d\n", serverPort)

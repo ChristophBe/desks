@@ -5,6 +5,7 @@ import (
 	"github.com/ChristophBe/desks/desks-api/data"
 	"github.com/ChristophBe/desks/desks-api/middlewares"
 	"github.com/ChristophBe/desks/desks-api/models"
+	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
 	"time"
@@ -39,6 +40,14 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 
 	if !body.Start.Before(body.End) {
 		err := util.BadRequest(fmt.Errorf("start should before end"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	maxBookingDate := services.NewFrontendConfigurationService().GetFrontendConfiguration().MaximalBookingDate
+
+	if !body.End.Before(maxBookingDate) {
+		err := util.BadRequest(fmt.Errorf("the booking should be befor %v", maxBookingDate))
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}

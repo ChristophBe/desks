@@ -5,7 +5,15 @@
     <v-card-title>
       Book a Desk
     </v-card-title>
+
+    <div v-if="roomsLoading || configurationLoading">
+      <v-progress-circular
+          indeterminate
+          color="primary"
+      ></v-progress-circular>
+    </div>
     <v-form
+        v-else
         ref="form"
         v-model="valid"
         @submit.prevent="submit"
@@ -16,8 +24,10 @@
         <v-select
             v-model="room"
             label="Room"
-            :items="rooms.map(room => room.name)"
+            :items="rooms.map(r => r.name)"
             :rules="[() => !!room || 'This field is required']"
+            @update:modelValue="validate"
+
             required
         >
         </v-select>
@@ -25,7 +35,11 @@
             v-model="date"
             label="Date"
             type="date"
-            :rules="[() => !!date || 'This field is required']"
+            :rules="[
+                () => !!date || 'This field is required',
+                (v) => dateMinValidationRule(v) || 'The date can not be in the past',
+                (v) => dateMaxValidationRule(v) || 'The date is to far in the future'
+             ]"
             @change="validate"
             required
         ></v-text-field>
@@ -41,7 +55,10 @@
             v-model="end"
             label="End"
             type="time"
-            :rules="[() => !!end || 'This field is required']"
+            :rules="[
+              () => !!end || 'This field is required',
+              (v) => endValidationRule(v) ||  'End has to be after start'
+            ]"
             @change="validate"
             required
         ></v-text-field>
@@ -79,19 +96,32 @@ export default defineComponent({
   name: "AddBookingForm",
   data: () => ({
     valid: false,
-    date: null,
+    date: moment().add(1,'days').format("YYYY-MM-DD"),
     room: null,
     start: '09:00',
-    end: '17:00',
+    end: '17:00'
   }),
 
   mounted() {
     this.$store.dispatch("rooms/fetchRooms")
+    this.$store.dispatch("configuration/fetchConfiguration")
   },
   computed: {
-    ...mapState('rooms', ['rooms']),
+    ...mapState('rooms', {rooms: 'rooms', roomsLoading: 'loading'}),
+    ...mapState('configuration', {configuration: 'configuration', configurationLoading: 'loading'}),
   },
   methods: {
+    endValidationRule(v){
+      const start = moment().add(this.start);
+      const end = moment().add(v);
+      return end.isAfter(start)
+    },
+    dateMinValidationRule(v){
+      return moment(v).isSameOrAfter(moment.now(),"days")
+    },
+    dateMaxValidationRule(v){
+      return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate),"days")
+    },
     validate() {
       this.$refs.form.validate()
     },
