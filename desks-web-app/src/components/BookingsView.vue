@@ -1,6 +1,7 @@
 <template>
   <v-dialog
       v-model="dialog"
+      persistent
   >
     <AddBookingForm @close="dialog=false"></AddBookingForm>
   </v-dialog>

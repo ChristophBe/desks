@@ -4,6 +4,7 @@ import {InjectionKey} from "vue";
 import {UserState, userModule} from "@/stores/user-module";
 import {roomsModule} from "@/stores/rooms-module";
 import {bookingsModule} from "@/stores/booking-module";
+import {configurationModule} from "@/stores/configuration-module";
 
 
 export interface RootState {
@@ -17,7 +18,8 @@ export const store = new Vuex.Store<RootState>({
         modules: {
             user: userModule,
             rooms: roomsModule,
-            bookings: bookingsModule
+            bookings: bookingsModule,
+            configuration: configurationModule
         }
     }
 );
