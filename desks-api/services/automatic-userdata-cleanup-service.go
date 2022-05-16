@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"github.com/ChristophBe/desks/desks-api/data"
-	"github.com/ChristophBe/desks/desks-api/util"
+	"github.com/ChristophBe/desks/desks-api/util/configuration"
 	"log"
 	"time"
 )
@@ -26,7 +26,7 @@ type automaticUserDataCleanupServiceImpl struct {
 
 func (a automaticUserDataCleanupServiceImpl) InitAutomaticUserDataCleaner(ctx context.Context) {
 
-	automaticCleanerInterval := util.GetIntEnvironmentVariable("USERDATA_CLEANER_INTERVAL_HOURS", 24)
+	automaticCleanerInterval := configuration.UserdataCleanerIntervalHours.GetValue()
 
 	ticker := time.Tick(time.Duration(automaticCleanerInterval) * time.Hour)
 	go a.cleanUserData(ctx)
@@ -51,7 +51,7 @@ func (a automaticUserDataCleanupServiceImpl) cleanUserData(ctx context.Context) 
 			log.Println("Recovered panic in user data cleaner ", recovered)
 		}
 	}()
-	maxDataAge := util.GetIntEnvironmentVariable("MAX_USERDATA_AGE_DAYS", 90)
+	maxDataAge := configuration.MaxUserdataAgeDays.GetValue()
 	deletedUsers, err := a.userRepository.DeleteInactiveUser(ctx, maxDataAge)
 	if err != nil {
 		log.Println("failed to cleanup inactive users", err)
