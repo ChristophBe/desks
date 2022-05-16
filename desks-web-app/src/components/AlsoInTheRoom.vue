@@ -3,7 +3,7 @@
   <v-list v-else>
     <v-list-item  class="px-0" two-line v-for="booking in bookings" :key="booking.id">
       <v-list-item-header>
-        <v-list-item-title>{{ booking.user.firstname }} {{ booking.user.lastname }}</v-list-item-title>
+        <v-list-item-title>{{ booking.user.givenName }} {{ booking.user.familyName }}</v-list-item-title>
         <v-list-item-subtitle>{{ formatTime(booking.start) }} - {{
             formatTime(booking.end)
           }}

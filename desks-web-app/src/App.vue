@@ -10,7 +10,7 @@
       >
         <span
             class="white--text text-h5">{{
-            user.firstname.charAt(0).toUpperCase() + user.lastname.charAt(0).toUpperCase()
+            user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
           }}</span>
       </v-avatar>
     </v-app-bar>
@@ -18,7 +18,7 @@
 
 
       <v-container>
-        <GetUser v-if="!user && !loading"/>
+        <Login v-if="!user && !loading"/>
 
         <v-card v-else-if="loading">
           <v-card-title>Wait for it</v-card-title>
@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-class-component';
-import GetUser from './components/GetUser.vue';
+import Login from './components/GetUser.vue';
 import {mapState} from "vuex";
 import Bookings from "./components/BookingsView.vue";
 import BookingsView from "@/components/BookingsView.vue";
@@ -42,7 +42,7 @@ import BookingsView from "@/components/BookingsView.vue";
   components: {
     BookingsView,
     Bookings,
-    GetUser,
+    Login: Login,
   },
 
   mounted() {
