@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/ChristophBe/desks/desks-api/models"
-	"github.com/ChristophBe/desks/desks-api/util"
+	"github.com/ChristophBe/desks/desks-api/util/configuration"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,10 +16,10 @@ var connection *gorm.DB
 
 func initConnection() (db *gorm.DB, err error) {
 
-	host := util.GetStringEnvironmentVariable("DB_HOST", "localhost")
-	username := util.GetStringEnvironmentVariable("DB_USERNAME", "postgres")
-	password := util.GetStringEnvironmentVariable("DB_PASSWORD", "password123")
-	databaseName := util.GetStringEnvironmentVariable("DB_NAME", "desks_api")
+	host := configuration.DBHost.GetValue()
+	username := configuration.DBUsername.GetValue()
+	password := configuration.DBPassword.GetValue()
+	databaseName := configuration.DBName.GetValue()
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s sslmode=disable", host, username, password, databaseName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),

@@ -3,7 +3,7 @@ package services
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/ChristophBe/desks/desks-api/util"
+	"github.com/ChristophBe/desks/desks-api/util/configuration"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
@@ -30,7 +30,7 @@ func (a jwtTokenServiceImpl) GenerateToken(claims jwt.MapClaims, duration time.D
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err = token.SignedString(singingKey)
+	tokenString, err = token.SignedString(getSigningKey())
 	return
 }
 
@@ -42,7 +42,7 @@ func (a jwtTokenServiceImpl) VerifyToken(tokenString string) (claims jwt.MapClai
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return singingKey, nil
+		return getSigningKey(), nil
 	})
 	if err != nil {
 		return
@@ -69,7 +69,7 @@ func NewJwtTokenService() JwtTokenService {
 
 func getSigningKey() []byte {
 	if singingKey == nil {
-		singingKeyString := util.GetStringEnvironmentVariable("JWT_SIGNING_KEY", "")
+		singingKeyString := configuration.JwtSigningKey.GetValue()
 		if len(singingKeyString) > 0 {
 			singingKey = []byte(singingKeyString)
 		} else {

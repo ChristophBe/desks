@@ -1,4 +1,4 @@
-package util
+package configuration
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func GetStringEnvironmentVariable(key string, defaultValue string) string {
+func getStringEnvironmentVariable(key string, defaultValue string) string {
 	value := os.Getenv(key)
 	if reflect.ValueOf(value).IsZero() {
 		return defaultValue
@@ -15,7 +15,7 @@ func GetStringEnvironmentVariable(key string, defaultValue string) string {
 	return value
 }
 
-func GetIntEnvironmentVariable(key string, defaultValue int) int {
+func getIntEnvironmentVariable(key string, defaultValue int) int {
 	valueString := os.Getenv(key)
 
 	if reflect.ValueOf(valueString).IsZero() {
