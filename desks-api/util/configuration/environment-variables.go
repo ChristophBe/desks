@@ -1,4 +1,4 @@
-package util
+package configuration
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func getStringEnvironmentVariable(key string, defaultValue string) string {
 func getRequiredStringEnvironmentVariable(key string) (string, error) {
 	value := os.Getenv(key)
 	if reflect.ValueOf(value).IsZero() {
-		return "", fmt.Errorf("reqwuired environment valriable %s not set", key)
+		return "", fmt.Errorf("required environment valriable %s not set", key)
 	}
 	return value, nil
 }

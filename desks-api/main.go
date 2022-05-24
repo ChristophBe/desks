@@ -55,6 +55,7 @@ func withAuth(handlerFunc http.HandlerFunc) http.Handler {
 
 func initDefaultConfigurations() {
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.ServerPort, 8080)
+	configuration.RegisterStringConfigurationWithDefault(configuration.BaseUrl, "http://localhost:8081")
 
 	configuration.RegisterStringConfigurationWithDefault(configuration.DBHost, "localhost")
 	configuration.RegisterStringConfigurationWithDefault(configuration.DBUsername, "postgres")
@@ -65,4 +66,10 @@ func initDefaultConfigurations() {
 
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.UserdataCleanerIntervalHours, 24)
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.MaxUserdataAgeDays, 90)
+
+	configuration.RegisterStringConfiguration(configuration.OauthClientId)
+	configuration.RegisterStringConfiguration(configuration.OauthClientSecret)
+	configuration.RegisterStringConfiguration(configuration.OauthTokenUrl)
+	configuration.RegisterStringConfiguration(configuration.OauthAuthorizationUrl)
+	configuration.RegisterStringConfiguration(configuration.OauthUserinfoUrl)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
+	"github.com/ChristophBe/desks/desks-api/util/configuration"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -19,43 +20,19 @@ type OpenIdUserInfo struct {
 	GivenName  string `json:"given_name"`
 }
 
-func getOauthConfig() (oauthConfig *oauth2.Config, err error) {
-	var (
-		clientId         string
-		clientSecret     string
-		tokenUrl         string
-		authorizationUrl string
-		baseUrl          string
-	)
+type OauthState struct {
+	RedirectUrl string `json:"redirectUrl"`
+}
 
-	clientId, err = util.GetRequiredStringEnvironmentVariable("OAUTH_CLIENT_ID")
-	if err != nil {
-		return
-	}
-	clientSecret, err = util.GetRequiredStringEnvironmentVariable("OAUTH_CLIENT_SECRET")
-	if err != nil {
-		return
-	}
-	tokenUrl, err = util.GetRequiredStringEnvironmentVariable("OAUTH_TOKEN_URL")
-	if err != nil {
-		return
-	}
-	authorizationUrl, err = util.GetRequiredStringEnvironmentVariable("OAUTH_AUTHORIZATION_URL")
-	if err != nil {
-		return
-	}
-	baseUrl, err = util.GetRequiredStringEnvironmentVariable("BASE_URL")
-	if err != nil {
-		return
-	}
+func getOauthConfig() (oauthConfig *oauth2.Config, err error) {
 	return &oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
+		ClientID:     configuration.OauthClientId.GetValue(),
+		ClientSecret: configuration.OauthClientSecret.GetValue(),
 		Scopes:       []string{"openid"},
-		RedirectURL:  fmt.Sprintf("%s/auth/token", baseUrl),
+		RedirectURL:  fmt.Sprintf("%s/auth/token", configuration.BaseUrl.GetValue()),
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  authorizationUrl,
-			TokenURL: tokenUrl,
+			AuthURL:  configuration.OauthAuthorizationUrl.GetValue(),
+			TokenURL: configuration.OauthTokenUrl.GetValue(),
 		},
 	}, nil
 
@@ -101,12 +78,8 @@ func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	userInfoUrl, err := util.GetRequiredStringEnvironmentVariable("OAUTH_USERINFO_URL")
-	if err != nil {
-		err = util.InternalServerError(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
+	userInfoUrl := configuration.OauthUserinfoUrl.GetValue()
+
 	client := conf.Client(ctx, tok)
 	resp, err := client.Get(userInfoUrl)
 	if err != nil {
@@ -149,14 +122,12 @@ func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	services.NewAuthCookieService().SetAuthCookieFor(user, writer, request)
-
-	baseUrl, err := util.GetRequiredStringEnvironmentVariable("BASE_URL")
-	if err != nil {
-		err = util.InternalServerError(err)
-		util.ErrorResponseWriter(err, writer, request)
+	if err = services.NewAuthCookieService().SetAuthCookieFor(user, writer, request); err != nil {
+		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 		return
 	}
+
+	baseUrl := configuration.BaseUrl.GetValue()
 
 	http.Redirect(writer, request, baseUrl, http.StatusTemporaryRedirect)
 }
