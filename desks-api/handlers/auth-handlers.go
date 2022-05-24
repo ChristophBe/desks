@@ -83,7 +83,6 @@ func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
 	client := conf.Client(ctx, tok)
 	resp, err := client.Get(userInfoUrl)
 	if err != nil {
-
 		err = util.Unauthorized(err)
 		util.ErrorResponseWriter(err, writer, request)
 		return
