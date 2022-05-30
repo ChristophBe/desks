@@ -9,17 +9,24 @@ services:
     volumes:
       - data:/var/lib/postgresql
     environment:
-      POSTGRES_PASSWORD: password123
-      POSTGRES_USER: postgres
-      POSTGRES_DB: desks_api
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_NAME}
 
   api:
     build: ./desks-api
     environment:
       DB_HOST: "db"
-      DB_USERNAME: "postgres"
-      DB_PASSWORD: "password123"
-      DB_NAME: "desks_api"
+      DB_USERNAME:  ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      BASE_URL: ${BASE_URL}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
+      OAUTH_TOKEN_URL: ${OAUTH_TOKEN_URL}
+      OAUTH_AUTHORIZATION_URL: ${OAUTH_AUTHORIZATION_URL}
+      OAUTH_USERINFO_URL: ${OAUTH_USERINFO_URL}
+
     ports:
       - "8080:8080"
     depends_on:

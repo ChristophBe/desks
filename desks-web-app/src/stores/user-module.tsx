@@ -49,7 +49,8 @@ const userActions: ActionTree<UserState, RootState> = {
         const response = await fetch("/api/v1.0/users/me")
         if (response.status >= 400) {
             commit('logout')
-            return
+
+            window.location.replace("/auth/login");
         }
         try {
             const user = await response.json()

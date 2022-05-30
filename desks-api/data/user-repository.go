@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepository interface {
-	FindByUsername(ctx context.Context, username string) (models.User, error)
+	FindByExternalUserID(ctx context.Context, userId string) (models.User, error)
 	Save(ctx context.Context, user models.User) (models.User, error)
 	FindById(ctx context.Context, id int64) (models.User, error)
 	DeleteInactiveUser(ctx context.Context, maxAgeInDays int) (int64, error)
@@ -37,12 +37,12 @@ func (u userRepositoryImpl) Save(ctx context.Context, user models.User) (stored 
 	return
 }
 
-func (u userRepositoryImpl) FindByUsername(ctx context.Context, username string) (user models.User, err error) {
+func (u userRepositoryImpl) FindByExternalUserID(ctx context.Context, userId string) (user models.User, err error) {
 	db, err := GetConnection(ctx)
 	if err != nil {
 		return
 	}
-	err = db.Where("username = ?", username).First(&user).Error
+	err = db.Where("external_user_id = ?", userId).First(&user).Error
 	return
 }
 func (u userRepositoryImpl) FindById(ctx context.Context, userId int64) (user models.User, err error) {

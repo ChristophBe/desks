@@ -37,7 +37,8 @@ func main() {
 func initRouter() *mux.Router {
 	urlPrefix := "/api/v1.0"
 	router := mux.NewRouter()
-	router.Path(urlPrefix + "/users/login").HandlerFunc(handlers.PostUsersLogin).Methods(http.MethodPost)
+	router.Path("/auth/login").HandlerFunc(handlers.AuthLogin).Methods(http.MethodGet)
+	router.Path("/auth/token").HandlerFunc(handlers.AuthRedirect).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/users/me").Handler(withAuth(handlers.GetUsersMe)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/rooms").Handler(withAuth(handlers.GetAllRooms)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/rooms/{id}/bookings").Handler(withAuth(handlers.GetBookingsByRoomAndDate)).Methods(http.MethodGet)
@@ -46,7 +47,6 @@ func initRouter() *mux.Router {
 	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
 	router.Path(urlPrefix + "/configuration").Handler(withAuth(handlers.GetFrontendConfiguration)).Methods(http.MethodGet)
 	return router
-
 }
 
 func withAuth(handlerFunc http.HandlerFunc) http.Handler {
@@ -55,6 +55,7 @@ func withAuth(handlerFunc http.HandlerFunc) http.Handler {
 
 func initDefaultConfigurations() {
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.ServerPort, 8080)
+	configuration.RegisterStringConfigurationWithDefault(configuration.BaseUrl, "http://localhost:8081")
 
 	configuration.RegisterStringConfigurationWithDefault(configuration.DBHost, "localhost")
 	configuration.RegisterStringConfigurationWithDefault(configuration.DBUsername, "postgres")
@@ -65,4 +66,10 @@ func initDefaultConfigurations() {
 
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.UserdataCleanerIntervalHours, 24)
 	configuration.RegisterIntegerConfigurationWithDefault(configuration.MaxUserdataAgeDays, 90)
+
+	configuration.RegisterStringConfiguration(configuration.OauthClientId)
+	configuration.RegisterStringConfiguration(configuration.OauthClientSecret)
+	configuration.RegisterStringConfiguration(configuration.OauthTokenUrl)
+	configuration.RegisterStringConfiguration(configuration.OauthAuthorizationUrl)
+	configuration.RegisterStringConfiguration(configuration.OauthUserinfoUrl)
 }

@@ -2,7 +2,7 @@ package models
 
 type User struct {
 	AbstractModel
-	Username  string `json:"username" gorm:"unique;notNull"`
-	Firstname string `json:"firstname" gorm:"notNull"`
-	Lastname  string `json:"lastname" gorm:"notNull"`
+	ExternalUserId string `json:"-" gorm:"unique;notNull"`
+	FamilyName     string `json:"familyName" gorm:"notNull"`
+	GivenName      string `json:"givenName" gorm:"notNull"`
 }
