@@ -21,6 +21,8 @@
         lazy-validation
     >
       <v-card-text>
+
+
         <v-select
             v-model="room"
             label="Room"
@@ -31,6 +33,8 @@
             required
         >
         </v-select>
+
+
         <v-text-field
             v-model="date"
             label="Date"
@@ -63,7 +67,8 @@
             required
         ></v-text-field>
 
-
+        <overlapping-bookings v-if="room" :room="rooms.find(r => r.name === room)" :date="date" :start="start"
+                              :end="end"></overlapping-bookings>
       </v-card-text>
 
       <v-card-actions>
@@ -90,13 +95,15 @@
 import {defineComponent} from "vue";
 import {mapState} from "vuex";
 import moment from "moment";
+import OverlappingBookings from "@/components/OverlappingBookings";
 
 
 export default defineComponent({
   name: "AddBookingForm",
+  components: {OverlappingBookings},
   data: () => ({
     valid: false,
-    date: moment().add(1,'days').format("YYYY-MM-DD"),
+    date: moment().add(1, 'days').format("YYYY-MM-DD"),
     room: null,
     start: '09:00',
     end: '17:00'
@@ -111,16 +118,16 @@ export default defineComponent({
     ...mapState('configuration', {configuration: 'configuration', configurationLoading: 'loading'}),
   },
   methods: {
-    endValidationRule(v){
+    endValidationRule(v) {
       const start = moment().add(this.start);
       const end = moment().add(v);
       return end.isAfter(start)
     },
-    dateMinValidationRule(v){
-      return moment(v).isSameOrAfter(moment.now(),"days")
+    dateMinValidationRule(v) {
+      return moment(v).isSameOrAfter(moment.now(), "days")
     },
-    dateMaxValidationRule(v){
-      return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate),"days")
+    dateMaxValidationRule(v) {
+      return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days")
     },
     validate() {
       this.$refs.form.validate()
