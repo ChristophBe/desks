@@ -1,16 +1,20 @@
 import {ActionContext, ActionTree, GetterTree, Module, MutationTree} from "vuex";
 import Booking from "@/models/Booking";
-import moment from "moment";
+import moment, {Moment} from "moment";
 import {RootState} from "@/stores/store";
+import BookingUtils from "@/utils/booking-utils";
+import Room from "@/models/Room";
 
 
 export interface BookingsState {
     loading: boolean
+    bookingsFetched: boolean
     bookings: Array<Booking>
 }
 
 const state: BookingsState = {
     loading: false,
+    bookingsFetched: true,
     bookings: []
 }
 
@@ -29,6 +33,15 @@ const getters: GetterTree<BookingsState, RootState> = {
     },
     todaysBookings(state: BookingsState) {
         return state.bookings.filter(booking => moment(booking.start).isSame(moment.now(), 'days'))
+    },
+    getOverlappingBookings(state: BookingsState) {
+        if (!state.bookingsFetched) {
+            throw "bookings were not fetched"
+        }
+        return (room: Room, start: Moment, end: Moment) => {
+            return BookingUtils.findOverlaps(state.bookings, start, end)
+                .filter(booking => booking.room.id === room.id);
+        }
     }
 }
 const actions: ActionTree<BookingsState, RootState> = {

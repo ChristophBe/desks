@@ -16,6 +16,7 @@ import {defineComponent} from "vue";
 import moment from "moment";
 import {mapState} from "vuex";
 import Booking from "@/models/Booking";
+import BookingUtils from "@/utils/booking-utils";
 
 interface OverlappingBookingsData {
   overlappingBookings: number
@@ -79,23 +80,14 @@ export default defineComponent({
       this.checkOverlaps()
     },
 
-    checkOverlaps() {
+    checkOverlaps: function () {
 
       const start = moment(this.date).add(this.start)
       const end = moment(this.date).add(this.end)
 
 
       console.log(this.bookings)
-      const overlaps = this.bookings.filter((booking) => {
-
-        const bookingStart = moment(booking.start)
-        const bookingEnd = moment(booking.end)
-        return (start.isSameOrBefore(bookingStart) && end.isSameOrAfter(bookingEnd))
-            || start.isBetween(bookingStart, bookingEnd)
-            || end.isBetween(bookingStart, bookingEnd)
-      })
-
-      console.log(overlaps)
+      const overlaps = BookingUtils.findOverlaps(this.bookings, start, end)
       this.overlappingBookings = overlaps.length
     },
 

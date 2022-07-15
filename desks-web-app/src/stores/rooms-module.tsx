@@ -1,10 +1,6 @@
-import Vuex, {ActionContext, ActionTree, Module, MutationTree, Store, useStore as baseUseStore} from "vuex";
+import {ActionContext, ActionTree, Module, MutationTree} from "vuex";
 
-import {InjectionKey} from "vue";
-import User from "../models/User";
-import Booking from "@/models/Booking";
 import Room from "@/models/Room";
-import moment from "moment";
 import {RootState} from "@/stores/store";
 
 

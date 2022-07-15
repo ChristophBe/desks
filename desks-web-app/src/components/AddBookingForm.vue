@@ -22,17 +22,17 @@
     >
       <v-card-text>
 
-
-        <v-select
+        <v-autocomplete
             v-model="room"
             label="Room"
-            :items="rooms.map(r => r.name)"
+            :items="rooms"
+            item-title="name"
+            item-value="id"
             :rules="[() => !!room || 'This field is required']"
             @update:modelValue="validate"
-
             required
         >
-        </v-select>
+        </v-autocomplete>
 
 
         <v-text-field
@@ -66,14 +66,26 @@
             @change="validate"
             required
         ></v-text-field>
+        <div v-if="room">
+          <v-alert v-if="hasOwnOverlaps"
+                   density="comfortable"
+                   type="error"
+                   variant="contained-text"
+                   class="mb-2"
+          >
+            You already have booked a desk in the selected <br/>room for the selected timeframe.
+          </v-alert>
+          <overlapping-bookings v-else :room="getSelectedRoom()" :date="date" :start="start"
+                                :end="end"></overlapping-bookings>
 
-        <overlapping-bookings v-if="room" :room="rooms.find(r => r.name === room)" :date="date" :start="start"
-                              :end="end"></overlapping-bookings>
+        </div>
+
+
       </v-card-text>
 
       <v-card-actions>
         <v-btn
-            :disabled="!valid"
+            :disabled="!valid || hasOwnOverlaps"
             @click="submit"
         >
           Book
@@ -93,7 +105,7 @@
 <script>
 
 import {defineComponent} from "vue";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import moment from "moment";
 import OverlappingBookings from "@/components/OverlappingBookings";
 
@@ -106,7 +118,8 @@ export default defineComponent({
     date: moment().add(1, 'days').format("YYYY-MM-DD"),
     room: null,
     start: '09:00',
-    end: '17:00'
+    end: '17:00',
+    hasOwnOverlaps: false
   }),
 
   mounted() {
@@ -116,6 +129,7 @@ export default defineComponent({
   computed: {
     ...mapState('rooms', {rooms: 'rooms', roomsLoading: 'loading'}),
     ...mapState('configuration', {configuration: 'configuration', configurationLoading: 'loading'}),
+    ...mapGetters('bookings', {getOverlaps: 'getOverlappingBookings'})
   },
   methods: {
     endValidationRule(v) {
@@ -131,13 +145,30 @@ export default defineComponent({
     },
     validate() {
       this.$refs.form.validate()
+      const start = this.getStartDate()
+      const end = this.getEndDate()
+      const room = this.getSelectedRoom();
+      const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end);
+      this.hasOwnOverlaps = room !== null ? overlaps.length > 0 : false;
+
+    },
+    getSelectedRoom() {
+      return this.rooms.find(r => this.room === r.id)
+    },
+    getStartDate() {
+      return moment(this.date).add(this.start)
+
+    },
+    getEndDate() {
+      return moment(this.date).add(this.end)
+
     },
     submit() {
       this.validate()
       if (this.valid) {
-        const start = moment(this.date).add(this.start)
-        const end = moment(this.date).add(this.end)
-        const room = this.rooms.find(r => this.room === r.name)
+        const start = this.getStartDate()
+        const end = this.getEndDate()
+        const room = this.getSelectedRoom()
         const booking = {
           room,
           start,
