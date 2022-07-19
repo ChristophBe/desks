@@ -14,7 +14,8 @@ services:
       POSTGRES_DB: ${DB_NAME}
 
   api:
-    build: ./desks-api
+    image: christophbde/desks-api:latest
+    #build: ./desks-api
     environment:
       DB_HOST: "db"
       DB_USERNAME:  ${DB_USERNAME}
@@ -33,9 +34,10 @@ services:
       - db
 
   web-app:
-    build: ./desks-web-app
+    image: christophbde/desks-web-app:latest
+    #build: ./desks-web-app
     ports:
-      - "80:5000"
+      - "5000:5000"
     depends_on:
       - api
 volumes:

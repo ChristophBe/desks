@@ -29,7 +29,7 @@ func getOauthConfig() (oauthConfig *oauth2.Config, err error) {
 		ClientID:     configuration.OauthClientId.GetValue(),
 		ClientSecret: configuration.OauthClientSecret.GetValue(),
 		Scopes:       []string{"openid"},
-		RedirectURL:  fmt.Sprintf("%s/auth/token", configuration.BaseUrl.GetValue()),
+		RedirectURL:  fmt.Sprintf("%s/auth/token/", configuration.BaseUrl.GetValue()),
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  configuration.OauthAuthorizationUrl.GetValue(),
 			TokenURL: configuration.OauthTokenUrl.GetValue(),

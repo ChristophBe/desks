@@ -5,11 +5,11 @@ import (
 	"net/http"
 )
 
-func LoggingMiddleware(handler http.Handler) http.Handler {
+func LoggingMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		log.Println(request.Method, request.URL)
-		handler.ServeHTTP(writer, request)
+		next.ServeHTTP(writer, request)
 	})
 
 }

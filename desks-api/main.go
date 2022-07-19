@@ -25,6 +25,7 @@ func main() {
 	router := initRouter()
 	httpRequestHandler := middlewares.CorsMiddleware(router)
 	httpRequestHandler = middlewares.LoggingMiddleware(httpRequestHandler)
+	httpRequestHandler = middlewares.TrimTrailingSlashMiddleware(httpRequestHandler)
 
 	serverPort := configuration.ServerPort.GetValue()
 	log.Printf("Starting Server and expose port %d\n", serverPort)
