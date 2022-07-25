@@ -50,7 +50,7 @@ func initRouter() *mux.Router {
 	return router
 }
 
-func withAuth(handlerFunc http.HandlerFunc) http.Handler {
+func withAuth(handlerFunc middlewares.AuthorizedHandler) http.Handler {
 	return middlewares.AuthMiddleware(handlerFunc)
 }
 

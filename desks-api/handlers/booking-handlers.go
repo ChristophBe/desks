@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"github.com/ChristophBe/desks/desks-api/data"
-	"github.com/ChristophBe/desks/desks-api/middlewares"
 	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
@@ -11,7 +10,7 @@ import (
 	"time"
 )
 
-func PostBooking(writer http.ResponseWriter, request *http.Request) {
+func PostBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
 
 	bookingRepository := data.NewBookingRepository()
 	roomRepository := data.NewRoomRepository()
@@ -21,13 +20,6 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 
 	if err := util.ReadJsonBody(request, &body); err != nil {
 		err = util.BadRequest(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	user, ok := ctx.Value(middlewares.UserContextKey).(models.User)
-	if !ok {
-		err := util.Unauthorized(fmt.Errorf("can not get user from request contenxt"))
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
@@ -80,16 +72,9 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func GetBookingsByUser(writer http.ResponseWriter, request *http.Request) {
+func GetBookingsByUser(user models.User, writer http.ResponseWriter, request *http.Request) {
 
 	ctx := request.Context()
-	user, ok := ctx.Value(middlewares.UserContextKey).(models.User)
-
-	if !ok {
-		err := util.Unauthorized(fmt.Errorf("can not get user from request contenxt"))
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
 
 	userId, err := util.GetIntegerUrlParameter(request, "id")
 
@@ -109,7 +94,7 @@ func GetBookingsByUser(writer http.ResponseWriter, request *http.Request) {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
-func GetBookingsByRoomAndDate(writer http.ResponseWriter, request *http.Request) {
+func GetBookingsByRoomAndDate(_ models.User, writer http.ResponseWriter, request *http.Request) {
 
 	ctx := request.Context()
 
