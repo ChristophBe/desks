@@ -66,7 +66,7 @@
             @change="validate"
             required
         ></v-text-field>
-        <div v-if="room">
+        <div v-if="getSelectedRoom()">
           <v-alert v-if="hasOwnOverlaps"
                    density="comfortable"
                    type="error"

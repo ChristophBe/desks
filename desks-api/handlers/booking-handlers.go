@@ -58,6 +58,16 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if existsOverlap, err := bookingRepository.ExistsOverlappingBooking(ctx, body); existsOverlap || err != nil {
+		if err != nil {
+			err = util.InternalServerError(err)
+		} else {
+			err = util.BadRequest(fmt.Errorf("not allowed to have overlapping bookings"))
+		}
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
 	booking, err := bookingRepository.Save(ctx, body)
 	if body.User.Id != user.Id {
 		err = util.InternalServerError(err)
