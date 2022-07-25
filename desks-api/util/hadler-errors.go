@@ -12,7 +12,7 @@ type HandlerError struct {
 }
 
 func (h HandlerError) Error() string {
-	return fmt.Sprintf("Message: %s, Status: %d, Cauese: %v ", h.Message, h.Status, h.Cause)
+	return fmt.Sprintf("Message: %s, Status: %d, Cause: %v ", h.Message, h.Status, h.Cause)
 }
 
 func InternalServerError(err error) error {

@@ -12,6 +12,7 @@ type BookingRepository interface {
 	FetchByUserId(ctx context.Context, userId int64) ([]models.Booking, error)
 	FetchByRoomAndDate(ctx context.Context, roomId int64, date time.Time) ([]models.Booking, error)
 	AnonymizeOldBookings(ctx context.Context, age int) (int64, error)
+	ExistsOverlappingBooking(ctx context.Context, booking models.Booking) (bool, error)
 }
 
 func NewBookingRepository() BookingRepository {
@@ -19,6 +20,15 @@ func NewBookingRepository() BookingRepository {
 }
 
 type bookingRepositoryImpl struct{}
+
+func (b bookingRepositoryImpl) ExistsOverlappingBooking(ctx context.Context, booking models.Booking) (result bool, err error) {
+	db, err := GetConnection(ctx)
+	if err != nil {
+		return
+	}
+	err = db.Raw("SELECT EXISTS(SELECT 1 FROM bookings WHERE room_id = ? and user_id = ? and ((\"start\" BETWEEN ?::timestamp and ?::timestamp) or (\"end\" BETWEEN ?::timestamp and ?::timestamp)))", booking.Room.Id, booking.User.Id, booking.Start, booking.End, booking.Start, booking.End).Scan(&result).Error
+	return
+}
 
 func (b bookingRepositoryImpl) AnonymizeOldBookings(ctx context.Context, maxAgeInDays int) (affectedRows int64, err error) {
 	db, err := GetConnection(ctx)
