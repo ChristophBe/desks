@@ -10,7 +10,7 @@
 
     <v-expansion-panels>
       <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
-        <v-expansion-panel-title class="pl-4 pr-8">
+        <v-expansion-panel-title class="pl-4">
           <span>{{ booking.room.name }}</span>
           <v-spacer></v-spacer>
           <span class="mr-4">

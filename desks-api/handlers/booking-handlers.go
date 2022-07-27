@@ -98,7 +98,7 @@ func DeleteBooking(user models.User, writer http.ResponseWriter, request *http.R
 		return
 	}
 
-	if booking.End.After(time.Now()) {
+	if booking.Start.Before(time.Now()) {
 		err = util.BadRequest(fmt.Errorf("not allowed to remove current or past bookings"))
 		util.ErrorResponseWriter(err, writer, request)
 		return

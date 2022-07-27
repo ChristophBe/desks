@@ -64,6 +64,21 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
 
     },
+
+    async deleteBooking({dispatch,state,rootState}: ActionContext<BookingsState, RootState>, booking: Booking){
+
+        console.log("Booking to delete", booking)
+        if (!rootState.user.user) {
+            console.log("Failed to create booking because of missing user")
+            return
+        }
+        booking.user = rootState.user.user
+
+        await deleteRequest("/api/v1.0/bookings/" + booking.id)
+
+        await dispatch("fetchBookings")
+
+    },
     async bookDesk({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Booking) {
         if (!rootState.user.user) {
             console.log("Failed to create booking because of missing user")
@@ -108,5 +123,21 @@ async function postData(url = '', data = {}) {
         redirect: 'follow', // manual, *follow, error
         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data) // body data type must match "Content-Type" header
+    });
+}
+// Example POST method implementation:
+async function deleteRequest(url = '') {
+    // Default options are marked with *
+    return await fetch(url, {
+        method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
 }

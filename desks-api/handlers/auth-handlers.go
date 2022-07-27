@@ -9,7 +9,6 @@ import (
 	"github.com/ChristophBe/desks/desks-api/util"
 	"github.com/ChristophBe/desks/desks-api/util/configuration"
 	"golang.org/x/oauth2"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -88,17 +87,9 @@ func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
 		return
 
 	}
-	defer request.Body.Close()
-
-	userInfoResponseBoy, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		err = util.Unauthorized(err)
-		util.ErrorResponseWriter(err, writer, request)
-	}
-
 	var userInfo OpenIdUserInfo
-	err = json.Unmarshal(userInfoResponseBoy, &userInfo)
+	err = json.NewDecoder(resp.Body).Decode(&userInfo)
+
 	if err != nil {
 		err = util.Unauthorized(err)
 		util.ErrorResponseWriter(err, writer, request)
