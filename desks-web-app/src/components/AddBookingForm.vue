@@ -109,7 +109,6 @@ import {mapGetters, mapState} from "vuex";
 import moment from "moment";
 import OverlappingBookings from "@/components/OverlappingBookings";
 
-
 export default defineComponent({
   name: "AddBookingForm",
   components: {OverlappingBookings},

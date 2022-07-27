@@ -1,6 +1,6 @@
 <template>
 
-  <v-list-item class=" justify-end align-center" @click='deleteBooking' :disabled="isCurrentOrPastBooking()">
+  <v-list-item class=" justify-end align-center" @click="onClick" :disabled="isCurrentOrPastBooking()">
 
     <v-list-item-avatar  start icon="mdi-delete"></v-list-item-avatar>
     <v-list-item-title>Remove</v-list-item-title>
@@ -10,20 +10,25 @@
 <script lang="ts">
 import {defineComponent} from "vue";
 import moment from "moment";
-
+import {mapActions} from "vuex";
 
 export default defineComponent({
+  name: "delete-booking-menu-item",
   props:{
     booking:{
       type: Object
     },
   },
+  computed: {
+
+  },
   methods: {
+    ...mapActions("bookings", ["deleteBooking"]),
     isCurrentOrPastBooking(){
       return moment(this.booking?.start).isBefore(moment.now())
     },
-    deleteBooking() {
-      this.$store.dispatch("bookings/deleteBooking", this.booking)
+    async onClick() {
+      await this.deleteBooking(this.booking);
     }
   }
 });
