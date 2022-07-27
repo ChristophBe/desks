@@ -7,6 +7,7 @@ import (
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -70,6 +71,47 @@ func PostBooking(user models.User, writer http.ResponseWriter, request *http.Req
 	if err = util.JsonResponseWriter(booking, http.StatusAccepted, writer, request); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
+}
+func DeleteBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
+	bookingRepository := data.NewBookingRepository()
+
+	ctx := request.Context()
+
+	bookingId, err := util.GetIntegerUrlParameter(request, "id")
+
+	if err != nil || reflect.ValueOf(bookingId).IsZero() {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	booking, err := bookingRepository.FetchById(ctx, bookingId)
+	if err != nil || reflect.ValueOf(booking.Id).IsZero() {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if booking.User.Id != user.Id {
+		err = util.NotFound(fmt.Errorf("booking with id %d not found for current user", bookingId))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if booking.End.After(time.Now()) {
+		err = util.BadRequest(fmt.Errorf("not allowed to remove current or past bookings"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	err = bookingRepository.Delete(ctx, booking)
+	if err != nil {
+		err = util.InternalServerError(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
 }
 
 func GetBookingsByUser(user models.User, writer http.ResponseWriter, request *http.Request) {

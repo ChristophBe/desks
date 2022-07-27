@@ -26,6 +26,7 @@ func main() {
 	httpRequestHandler := middlewares.CorsMiddleware(router)
 	httpRequestHandler = middlewares.LoggingMiddleware(httpRequestHandler)
 	httpRequestHandler = middlewares.TrimTrailingSlashMiddleware(httpRequestHandler)
+	httpRequestHandler = middlewares.PanicRecoveryMiddleware(httpRequestHandler)
 
 	serverPort := configuration.ServerPort.GetValue()
 	log.Printf("Starting Server and expose port %d\n", serverPort)
@@ -40,12 +41,17 @@ func initRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Path("/auth/login").HandlerFunc(handlers.AuthLogin).Methods(http.MethodGet)
 	router.Path("/auth/token").HandlerFunc(handlers.AuthRedirect).Methods(http.MethodGet)
+
 	router.Path(urlPrefix + "/users/me").Handler(withAuth(handlers.GetUsersMe)).Methods(http.MethodGet)
+
 	router.Path(urlPrefix + "/rooms").Handler(withAuth(handlers.GetAllRooms)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/rooms/{id}/bookings").Handler(withAuth(handlers.GetBookingsByRoomAndDate)).Methods(http.MethodGet)
 
 	router.Path(urlPrefix + "/users/{id}/bookings").Handler(withAuth(handlers.GetBookingsByUser)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
+	router.Path(urlPrefix + "/bookings/{id}").Handler(withAuth(handlers.DeleteBooking)).Methods(http.MethodDelete)
+	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.DeleteBooking)).Methods(http.MethodDelete)
+
 	router.Path(urlPrefix + "/configuration").Handler(withAuth(handlers.GetFrontendConfiguration)).Methods(http.MethodGet)
 	return router
 }

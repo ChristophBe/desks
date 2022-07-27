@@ -12,6 +12,8 @@ type BookingRepository interface {
 	FetchByUserId(ctx context.Context, userId int64) ([]models.Booking, error)
 	FetchByRoomAndDate(ctx context.Context, roomId int64, date time.Time) ([]models.Booking, error)
 	AnonymizeOldBookings(ctx context.Context, age int) (int64, error)
+	FetchById(ctx context.Context, id int64) (models.Booking, error)
+	Delete(ctx context.Context, booking models.Booking) error
 	ExistsOverlappingBooking(ctx context.Context, booking models.Booking) (bool, error)
 }
 
@@ -27,6 +29,24 @@ func (b bookingRepositoryImpl) ExistsOverlappingBooking(ctx context.Context, boo
 		return
 	}
 	err = db.Raw("SELECT EXISTS(SELECT 1 FROM bookings WHERE room_id = ? and user_id = ? and ((\"start\" BETWEEN ?::timestamp and ?::timestamp) or (\"end\" BETWEEN ?::timestamp and ?::timestamp)))", booking.Room.Id, booking.User.Id, booking.Start, booking.End, booking.Start, booking.End).Scan(&result).Error
+	return
+}
+
+func (b bookingRepositoryImpl) Delete(ctx context.Context, booking models.Booking) (err error) {
+	db, err := GetConnection(ctx)
+	if err != nil {
+		return
+	}
+	err = db.Delete(&booking).Error
+	return
+}
+
+func (b bookingRepositoryImpl) FetchById(ctx context.Context, id int64) (booking models.Booking, err error) {
+	db, err := GetConnection(ctx)
+	if err != nil {
+		return
+	}
+	err = db.Preload("User").Preload("Room").Find(&booking, id).Error
 	return
 }
 
