@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
 )
 
-func GetAllRooms(writer http.ResponseWriter, request *http.Request) {
+func GetAllRooms(_ models.User, writer http.ResponseWriter, request *http.Request) {
 	roomsRepositories := data.NewRoomRepository()
 
 	rooms, err := roomsRepositories.FindAll(request.Context())

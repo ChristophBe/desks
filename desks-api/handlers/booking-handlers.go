@@ -3,15 +3,15 @@ package handlers
 import (
 	"fmt"
 	"github.com/ChristophBe/desks/desks-api/data"
-	"github.com/ChristophBe/desks/desks-api/middlewares"
 	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
+	"reflect"
 	"time"
 )
 
-func PostBooking(writer http.ResponseWriter, request *http.Request) {
+func PostBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
 
 	bookingRepository := data.NewBookingRepository()
 	roomRepository := data.NewRoomRepository()
@@ -21,13 +21,6 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 
 	if err := util.ReadJsonBody(request, &body); err != nil {
 		err = util.BadRequest(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	user, ok := ctx.Value(middlewares.UserContextKey).(models.User)
-	if !ok {
-		err := util.Unauthorized(fmt.Errorf("can not get user from request contenxt"))
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
@@ -79,17 +72,51 @@ func PostBooking(writer http.ResponseWriter, request *http.Request) {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
-
-func GetBookingsByUser(writer http.ResponseWriter, request *http.Request) {
+func DeleteBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
+	bookingRepository := data.NewBookingRepository()
 
 	ctx := request.Context()
-	user, ok := ctx.Value(middlewares.UserContextKey).(models.User)
 
-	if !ok {
-		err := util.Unauthorized(fmt.Errorf("can not get user from request contenxt"))
+	bookingId, err := util.GetIntegerUrlParameter(request, "id")
+
+	if err != nil || reflect.ValueOf(bookingId).IsZero() {
+		err = util.NotFound(err)
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
+
+	booking, err := bookingRepository.FetchById(ctx, bookingId)
+	if err != nil || reflect.ValueOf(booking.Id).IsZero() {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if booking.User.Id != user.Id {
+		err = util.NotFound(fmt.Errorf("booking with id %d not found for current user", bookingId))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if booking.Start.Before(time.Now()) {
+		err = util.BadRequest(fmt.Errorf("not allowed to remove current or past bookings"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	err = bookingRepository.Delete(ctx, booking)
+	if err != nil {
+		err = util.InternalServerError(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func GetBookingsByUser(user models.User, writer http.ResponseWriter, request *http.Request) {
+
+	ctx := request.Context()
 
 	userId, err := util.GetIntegerUrlParameter(request, "id")
 
@@ -109,7 +136,7 @@ func GetBookingsByUser(writer http.ResponseWriter, request *http.Request) {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
-func GetBookingsByRoomAndDate(writer http.ResponseWriter, request *http.Request) {
+func GetBookingsByRoomAndDate(_ models.User, writer http.ResponseWriter, request *http.Request) {
 
 	ctx := request.Context()
 

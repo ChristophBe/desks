@@ -1,18 +1,16 @@
 package middlewares
 
 import (
-	"context"
 	"github.com/ChristophBe/desks/desks-api/data"
+	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"net/http"
 )
 
-type userContextKeyType string
+type AuthorizedHandler func(user models.User, writer http.ResponseWriter, request *http.Request)
 
-const UserContextKey = userContextKeyType("user")
-
-func AuthMiddleware(handler http.Handler) http.Handler {
+func AuthMiddleware(handler AuthorizedHandler) http.Handler {
 
 	authCookieService := services.NewAuthCookieService()
 	userRepository := data.NewUserRepository()
@@ -34,7 +32,6 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, UserContextKey, user)
-		handler.ServeHTTP(writer, request.WithContext(ctx))
+		handler(user, writer, request.WithContext(ctx))
 	})
 }

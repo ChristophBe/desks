@@ -28,21 +28,6 @@ const userMutations: MutationTree<UserState> = {
 };
 
 const userActions: ActionTree<UserState, RootState> = {
-    async login({commit}: ActionContext<UserState, RootState>, user: User) {
-        commit('loading')
-
-        const response = await postData("/api/v1.0/users/login", user)
-        if (response.status >= 400) {
-            commit('logout')
-            return
-        }
-        try {
-            const user = await response.json()
-            commit('login', user)
-        } catch (e) {
-            commit('logout')
-        }
-    },
     async fetchCurrentUser({commit}: ActionContext<UserState, RootState>) {
         commit('loading')
 
@@ -51,6 +36,7 @@ const userActions: ActionTree<UserState, RootState> = {
             commit('logout')
 
             window.location.replace("/auth/login");
+            return
         }
         try {
             const user = await response.json()

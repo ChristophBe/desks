@@ -6133,10 +6133,10 @@ vuetify-loader@^2.0.0-alpha.0:
     querystring "^0.2.1"
     upath "^2.0.1"
 
-"vuetify@npm:@vuetify/nightly@next":
-  version "3.0.0-next-20220430.0"
-  resolved "https://registry.yarnpkg.com/@vuetify/nightly/-/nightly-3.0.0-next-20220430.0.tgz#11191075814daad3edc1d92750c4f6b6873ab6ad"
-  integrity sha512-hOGEKRMcudisDpyUCUd4SQ1Jlj9PpXJco693kORcDcskhSpJ4gWJqoy6vxb1ig5pM+2L/ScvUvJKh8pzOeUzAw==
+vuetify@3.0.0-beta.5:
+  version "3.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.0.0-beta.5.tgz#8ec5d7de5b52a10e098390188894e4f081cba363"
+  integrity sha512-mU+pO5ZAZOR2Z7eVBoPwZw6nePxT5Sdqpsa4++Q99TwVxXQ7jl76Cy97v72MkDYWfxjDjj8XvW6IqNPGrJpU8w==
 
 vuex@^4.0.2:
   version "4.0.2"
