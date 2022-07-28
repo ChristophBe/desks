@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/ChristophBe/desks/desks-api/data"
 	"github.com/ChristophBe/desks/desks-api/models"
@@ -14,64 +16,122 @@ import (
 func PostBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
 
 	bookingRepository := data.NewBookingRepository()
-	roomRepository := data.NewRoomRepository()
-
 	ctx := request.Context()
-	var body models.Booking
 
-	if err := util.ReadJsonBody(request, &body); err != nil {
-		err = util.BadRequest(err)
+	body, err := readBookingFromRequest(request)
+	if err != nil {
 		util.ErrorResponseWriter(err, writer, request)
-		return
 	}
 
-	if body.User.Id != user.Id {
-		err := util.Forbidden(fmt.Errorf("not able to create a booking for another user"))
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	if !body.Start.Before(body.End) {
-		err := util.BadRequest(fmt.Errorf("start should before end"))
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	maxBookingDate := services.NewFrontendConfigurationService().GetFrontendConfiguration().MaximalBookingDate
-
-	if !body.End.Before(maxBookingDate) {
-		err := util.BadRequest(fmt.Errorf("the booking should be befor %v", maxBookingDate))
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	if room, err := roomRepository.FindById(ctx, body.Room.Id); err != nil || room.Id == 0 {
-		err = util.BadRequest(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	if existsOverlap, err := bookingRepository.ExistsOverlappingBooking(ctx, body); existsOverlap || err != nil {
-		if err != nil {
-			err = util.InternalServerError(err)
-		} else {
-			err = util.BadRequest(fmt.Errorf("not allowed to have overlapping bookings"))
-		}
+	if err = validateBooking(ctx, user, body); err != nil {
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
 
 	booking, err := bookingRepository.Save(ctx, body)
-	if body.User.Id != user.Id {
-		err = util.InternalServerError(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
 
 	if err = util.JsonResponseWriter(booking, http.StatusAccepted, writer, request); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
+
+func readBookingFromRequest(request *http.Request) (models.Booking, error) {
+	var body models.Booking
+
+	if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+		err = util.BadRequest(err)
+		return models.Booking{}, nil
+	}
+	return body, nil
+}
+
+func fetchOriginalBookingForModification(ctx context.Context, user models.User, request *http.Request) (booking models.Booking, err error) {
+	bookingRepository := data.NewBookingRepository()
+	bookingId, err := util.GetIntegerUrlParameter(request, "id")
+
+	if err != nil || reflect.ValueOf(bookingId).IsZero() {
+		return
+	}
+
+	booking, err = bookingRepository.FetchById(ctx, bookingId)
+	if err != nil || reflect.ValueOf(booking.Id).IsZero() {
+		return
+	}
+
+	if booking.User.Id != user.Id {
+		err = fmt.Errorf("booking with id %d not found for current user", bookingId)
+		return
+	}
+	return
+}
+
+func PatchBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
+
+	ctx := request.Context()
+	bookingRepository := data.NewBookingRepository()
+	booking, err := fetchOriginalBookingForModification(ctx, user, request)
+
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	body, err := readBookingFromRequest(request)
+	if err != nil {
+		util.ErrorResponseWriter(err, writer, request)
+	}
+
+	modifiedBooking := booking.Patch(body)
+
+	if err = validateBooking(ctx, user, modifiedBooking); err != nil {
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	storedBooking, err := bookingRepository.Save(ctx, body)
+
+	if err = util.JsonResponseWriter(storedBooking, http.StatusAccepted, writer, request); err != nil {
+		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
+	}
+
+}
+
+func validateBooking(ctx context.Context, user models.User, body models.Booking) error {
+
+	roomRepository := data.NewRoomRepository()
+	bookingRepository := data.NewBookingRepository()
+	if body.User.Id != user.Id {
+		return util.Forbidden(fmt.Errorf("not able to create a booking for another user"))
+	}
+
+	if !body.Start.Before(body.End) {
+		return util.BadRequest(fmt.Errorf("start should before end"))
+
+	}
+
+	maxBookingDate := services.NewFrontendConfigurationService().GetFrontendConfiguration().MaximalBookingDate
+
+	if !body.End.Before(maxBookingDate) {
+		return util.BadRequest(fmt.Errorf("the booking should be befor %v", maxBookingDate))
+
+	}
+
+	if room, err := roomRepository.FindById(ctx, body.Room.Id); err != nil || room.Id == 0 {
+		return util.BadRequest(err)
+
+	}
+
+	if existsOverlap, err := bookingRepository.ExistsOverlappingBooking(ctx, body); existsOverlap || err != nil {
+		if err != nil {
+			return util.InternalServerError(err)
+		} else {
+			return util.BadRequest(fmt.Errorf("not allowed to have overlapping bookings"))
+		}
+	}
+	return nil
+}
+
 func DeleteBooking(user models.User, writer http.ResponseWriter, request *http.Request) {
 	bookingRepository := data.NewBookingRepository()
 

@@ -3,13 +3,12 @@ package util
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-func JsonResponseWriter(responseBody interface{}, statusCode int, writer http.ResponseWriter, request *http.Request) (err error) {
+func JsonResponseWriter(responseBody interface{}, statusCode int, writer http.ResponseWriter, _ *http.Request) (err error) {
 
 	if responseBody == nil && statusCode == http.StatusNoContent {
 		writer.WriteHeader(http.StatusNoContent)
@@ -44,23 +43,6 @@ func ErrorResponseWriter(err error, writer http.ResponseWriter, request *http.Re
 		panic(err)
 	}
 
-}
-
-func ReadJsonBody(request *http.Request, value interface{}) error {
-
-	defer request.Body.Close()
-	body, err := ioutil.ReadAll(request.Body)
-
-	if err != nil {
-		return BadRequest(err)
-	}
-
-	err = json.Unmarshal(body, value)
-	if err != nil {
-		return BadRequest(err)
-	}
-
-	return nil
 }
 
 func GetIntegerUrlParameter(request *http.Request, key string) (_ int64, err error) {
