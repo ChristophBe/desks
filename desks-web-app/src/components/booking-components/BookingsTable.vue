@@ -36,7 +36,11 @@
 
           <v-menu activator="parent">
             <v-list density="compact">
-              <delete-booking-menu-item :booking="item"></delete-booking-menu-item>
+              <v-list-item class="align-center" @click="editBooking(item)" :disabled="isCurrentOrPastBooking(item)">
+                <v-list-item-avatar start icon="mdi-pencil"></v-list-item-avatar>
+                <v-list-item-title>Edit</v-list-item-title>
+              </v-list-item>
+              <delete-booking-menu-item :booking="item" :disabled="isCurrentOrPastBooking(item)"></delete-booking-menu-item>
             </v-list>
           </v-menu>
         </v-btn>
@@ -46,10 +50,11 @@
   </v-table>
 </template>
 
-<script type="ts">
+<script lang="ts">
 import {defineComponent} from "vue";
 import moment from "moment";
-import DeleteBookingMenuItem from "@/components/DeleteBookingMenuItem.vue";
+import DeleteBookingMenuItem from "@/components/booking-components/DeleteBookingMenuItem.vue";
+import Booking from "@/models/Booking";
 
 export default defineComponent({
   name: "BookingsTable",
@@ -58,13 +63,19 @@ export default defineComponent({
   props: {
     bookings: Array
   },
-
   methods: {
-    formatDate(date) {
+    formatDate(date:Date) {
       return moment(date).format("DD.MM.YYYY")
     },
-    formatTime(date) {
+    formatTime(date:Date) {
       return moment(date).format("HH:mm")
+    },
+
+    editBooking(booking:Booking){
+      this.$emit("editBooking", booking)
+    },
+    isCurrentOrPastBooking(booking:Booking):boolean{
+      return moment(booking?.start).isBefore(moment.now())
     },
   }
 

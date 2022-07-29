@@ -24,11 +24,14 @@ func NewBookingRepository() BookingRepository {
 type bookingRepositoryImpl struct{}
 
 func (b bookingRepositoryImpl) ExistsOverlappingBooking(ctx context.Context, booking models.Booking) (result bool, err error) {
+
+	idsToIgnore := []int64{booking.Id}
+
 	db, err := GetConnection(ctx)
 	if err != nil {
 		return
 	}
-	err = db.Raw("SELECT EXISTS(SELECT 1 FROM bookings WHERE room_id = ? and user_id = ? and ((\"start\" BETWEEN ?::timestamp and ?::timestamp) or (\"end\" BETWEEN ?::timestamp and ?::timestamp)))", booking.Room.Id, booking.User.Id, booking.Start, booking.End, booking.Start, booking.End).Scan(&result).Error
+	err = db.Raw("SELECT EXISTS(SELECT 1 FROM bookings WHERE room_id = ? and user_id = ? and ((\"start\" BETWEEN ?::timestamp and ?::timestamp) or (\"end\" BETWEEN ?::timestamp and ?::timestamp)) and id not in ?)", booking.Room.Id, booking.User.Id, booking.Start, booking.End, booking.Start, booking.End, idsToIgnore).Scan(&result).Error
 	return
 }
 

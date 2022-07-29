@@ -1,9 +1,9 @@
 <template>
   <v-dialog
-      v-model="dialog"
+      v-model="showBookingFormDialog"
       persistent
   >
-    <AddBookingForm @close="dialog=false"></AddBookingForm>
+    <BookingForm @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingForm>
   </v-dialog>
   <v-card v-if="todaysBookings.length > 0" class="mb-3">
     <v-card-title>Today</v-card-title>
@@ -34,7 +34,7 @@
       <v-btn
           icon
           elevation="0"
-          @click="dialog=true"
+          @click="openCreateBookingDialog()"
       >
         <v-icon>mdi-plus</v-icon>
       </v-btn>
@@ -43,35 +43,51 @@
     <v-alert v-if="upcomingBookings.length  <= 0">
       You have currently no upcoming desk bookings.
     </v-alert>
-    <BookingsTable v-else :bookings="upcomingBookings"></BookingsTable>
+    <BookingsTable v-else :bookings="upcomingBookings" @editBooking="(booking) => openEditeBookingDialog(booking)"></BookingsTable>
   </v-card>
 </template>
 
-<script>
-import AddBookingForm from "@/components/AddBookingForm";
-import {defineComponent} from "vue";
-import {mapGetters} from "vuex";
-import moment from "moment";
-import BookingsTable from "@/components/BookingsTable";
-import AlsoInTheRoom from "@/components/AlsoInTheRoom";
+<script lang="ts">
 
+import {defineComponent} from "vue";
+import {mapActions, mapGetters} from "vuex";
+import moment from "moment";
+import BookingsTable from "@/components/booking-components/BookingsTable.vue";
+import AlsoInTheRoom from "@/components/booking-components/AlsoInTheRoom.vue";
+import Booking from "@/models/Booking";
+import BookingForm from "@/components/booking-components/BookingForm.vue";
+
+interface bookingViewData{
+  showBookingFormDialog:boolean
+  bookingToEdit:Booking|null
+}
 
 export default defineComponent({
   name: "BookingsView",
-  components: {AlsoInTheRoom, BookingsTable, AddBookingForm},
-  data: () => ({
-    dialog: false
+  components: {AlsoInTheRoom, BookingsTable, BookingForm},
+  data: ():bookingViewData  => ({
+    showBookingFormDialog: false,
+    bookingToEdit: null
   }),
   computed: mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
   mounted() {
-    this.$store.dispatch("bookings/fetchBookings")
+    this.fetchBookings()
   },
   methods: {
-    formatDate(date) {
+    ...mapActions("bookings",["fetchBookings"]),
+    formatDate(date:Date) {
       return moment(date).format("DD.MM.YYYY")
     },
-    formatTime(date) {
+    formatTime(date:Date) {
       return moment(date).format("HH:mm")
+    },
+    openCreateBookingDialog(){
+      this.showBookingFormDialog = true
+      this.bookingToEdit = null;
+    },
+    openEditeBookingDialog(booking:Booking){
+      this.showBookingFormDialog = true
+      this.bookingToEdit = booking
     }
   }
 
