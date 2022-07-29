@@ -33,10 +33,10 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-class-component';
-import Login from './components/GetUser.vue';
+import Login from './components/views/LoginView.vue';
 import {mapState} from "vuex";
-import Bookings from "./components/BookingsView.vue";
-import BookingsView from "@/components/BookingsView.vue";
+import Bookings from "./components/views/BookingsView.vue";
+import BookingsView from "@/components/views/BookingsView.vue";
 
 @Options({
   components: {

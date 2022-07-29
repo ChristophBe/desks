@@ -2,8 +2,11 @@
 
   <v-card class="card">
 
-    <v-card-title>
+    <v-card-title v-if="this.booking">
       Book a Desk
+    </v-card-title>
+    <v-card-title v-else>
+      Edit Desk Booking
     </v-card-title>
 
     <div v-if="roomsLoading || configurationLoading">
@@ -88,7 +91,7 @@
             :disabled="!valid || hasOwnOverlaps"
             @click="submit"
         >
-          Book
+          {{ booking? "Save": "Book"}}
         </v-btn>
         <v-btn
             @click="$emit('close')"
@@ -102,16 +105,23 @@
   </v-card>
 </template>
 
-<script>
+<script lang="ts">
 
 import {defineComponent} from "vue";
-import {mapGetters, mapState} from "vuex";
-import moment from "moment";
-import OverlappingBookings from "@/components/OverlappingBookings";
+import {mapActions, mapGetters, mapState} from "vuex";
+import moment, {Moment} from "moment";
+import OverlappingBookings from "@/components/booking-components/OverlappingBookings.vue";
+import Room from "@/models/Room";
+import Booking from "@/models/Booking";
 
 export default defineComponent({
-  name: "AddBookingForm",
+  name: "BookingForm",
   components: {OverlappingBookings},
+  props: {
+    booking: {
+      type: Object
+    }
+  },
   data: () => ({
     valid: false,
     date: moment().add(1, 'days').format("YYYY-MM-DD"),
@@ -122,8 +132,17 @@ export default defineComponent({
   }),
 
   mounted() {
-    this.$store.dispatch("rooms/fetchRooms")
-    this.$store.dispatch("configuration/fetchConfiguration")
+    this.fetchRooms()
+    this.fetchConfiguration()
+
+    if(this.booking != null){
+      this.room = this.booking.room.id;
+      this.date = moment(this.booking.start).format("YYYY-MM-DD");
+      this.start = moment(this.booking.start).format("HH:mm");
+      this.end = moment(this.booking.end).format("HH:mm");
+      const form = this.$refs.form as HTMLFormElement
+      form.validate()
+    }
   },
   computed: {
     ...mapState('rooms', {rooms: 'rooms', roomsLoading: 'loading'}),
@@ -131,34 +150,40 @@ export default defineComponent({
     ...mapGetters('bookings', {getOverlaps: 'getOverlappingBookings'})
   },
   methods: {
-    endValidationRule(v) {
+
+    ...mapActions("rooms",["fetchRooms"]),
+    ...mapActions("configuration",["fetchConfiguration"]),
+    ...mapActions("bookings",["saveBooking"]),
+    endValidationRule(v:string) {
       const start = moment().add(this.start);
       const end = moment().add(v);
       return end.isAfter(start)
     },
-    dateMinValidationRule(v) {
+    dateMinValidationRule(v:string) {
       return moment(v).isSameOrAfter(moment.now(), "days")
     },
-    dateMaxValidationRule(v) {
+    dateMaxValidationRule(v:string) {
       return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days")
     },
     validate() {
-      this.$refs.form.validate()
+
+      const form = this.$refs.form as HTMLFormElement
+      form.validate()
       const start = this.getStartDate()
       const end = this.getEndDate()
       const room = this.getSelectedRoom();
-      const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end);
+      const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end, this.booking ? [this.booking.id] :[]);
       this.hasOwnOverlaps = room !== null ? overlaps.length > 0 : false;
 
     },
     getSelectedRoom() {
-      return this.rooms.find(r => this.room === r.id)
+      return this.rooms.find((r:Room)=> this.room! === r.id)
     },
-    getStartDate() {
+    getStartDate()  :Moment{
       return moment(this.date).add(this.start)
 
     },
-    getEndDate() {
+    getEndDate() :Moment{
       return moment(this.date).add(this.end)
 
     },
@@ -168,13 +193,16 @@ export default defineComponent({
         const start = this.getStartDate()
         const end = this.getEndDate()
         const room = this.getSelectedRoom()
-        const booking = {
-          room,
-          start,
-          end
+        const booking:Partial<Booking> = {
+          room:room,
+          start: start.toDate(),
+          end: end.toDate()
         }
 
-        this.$store.dispatch('bookings/bookDesk', booking)
+        if(this.booking){
+          booking.id = this.booking.id
+        }
+        this.saveBooking(booking)
         this.$emit("close")
       }
 
