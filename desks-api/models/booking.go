@@ -20,7 +20,7 @@ func (b Booking) Patch(other Booking) Booking {
 		b.Room = other.Room
 	}
 	if !reflect.ValueOf(other.Start).IsZero() {
-		b.End = other.Start
+		b.Start = other.Start
 	}
 	if !reflect.ValueOf(other.End).IsZero() {
 		b.End = other.End

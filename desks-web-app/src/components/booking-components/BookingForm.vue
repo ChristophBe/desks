@@ -46,7 +46,7 @@
                 () => !!date || 'This field is required',
                 (v) => dateMinValidationRule(v) || 'The date can not be in the past',
                 (v) => dateMaxValidationRule(v) || 'The date is to far in the future'
-             ]"
+            ]"
             @change="validate"
             required
         ></v-text-field>
@@ -54,7 +54,10 @@
             v-model="start"
             label="Start"
             type="time"
-            :rules="[() => !!start || 'This field is required']"
+            :rules="[
+                () => !!start || 'This field is required',
+                () => startValidationRule() || 'The start time should be in the future'
+            ]"
             @change="validate"
             required
         ></v-text-field>
@@ -158,6 +161,9 @@ export default defineComponent({
       const start = moment().add(this.start);
       const end = moment().add(v);
       return end.isAfter(start)
+    },
+    startValidationRule() {
+      return  this.getStartDate().isAfter(moment.now());
     },
     dateMinValidationRule(v:string) {
       return moment(v).isSameOrAfter(moment.now(), "days")
