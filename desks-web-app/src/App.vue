@@ -26,8 +26,9 @@
         <BookingsView v-else></BookingsView>
       </v-container>
 
-
+      <app-notifications></app-notifications>
     </v-main>
+
   </v-app>
 </template>
 
@@ -37,9 +38,13 @@ import Login from './components/views/LoginView.vue';
 import {mapState} from "vuex";
 import Bookings from "./components/views/BookingsView.vue";
 import BookingsView from "@/components/views/BookingsView.vue";
+import Notifications from "@/components/Notifications.vue";
+import AppNotifications from "@/components/Notifications.vue";
 
 @Options({
   components: {
+    AppNotifications,
+    Notifications,
     BookingsView,
     Bookings,
     Login: Login,
