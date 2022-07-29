@@ -2,13 +2,12 @@
 
   <v-card class="card">
 
-    <v-card-title v-if="this.booking">
-      Book a Desk
+    <v-card-title v-if="booking">
+      Edit Booking
     </v-card-title>
     <v-card-title v-else>
-      Edit Desk Booking
+      Book a Desk
     </v-card-title>
-
     <div v-if="roomsLoading || configurationLoading">
       <v-progress-circular
           indeterminate
