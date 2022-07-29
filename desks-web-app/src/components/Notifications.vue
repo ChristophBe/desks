@@ -1,20 +1,13 @@
 <template>
-  <v-btn
-      color="orange-darken-2"
-      @click="snackbar = true"
-  >
-    Open Snackbar
-  </v-btn>
-
   <v-snackbar
       v-model="snackbar"
+      :color="notificationType === 'error' ? 'error': 'primary'"
       :timeout="timeout"
   >
     {{ text }}
 
     <template v-slot:actions>
       <v-btn
-          color="blue"
           variant="text"
           @click="snackbar = false"
       >
@@ -26,20 +19,26 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import OverlappingBookings from "@/components/booking-components/OverlappingBookings.vue";
-import moment from "moment/moment";
+import {mapState} from "vuex";
 
 export default defineComponent({
-      name: "Info",
-      data: () => ({
-        valid: false,
-        date: moment().add(1, 'days').format("YYYY-MM-DD"),
-        room: null,
-        start: '09:00',
-        end: '17:00',
-        hasOwnOverlaps: false
-      })
-    );
+  name: "app-notifications",
+  data: () => ({
+    snackbar: false,
+    timeout: 2000
+  }),
+  computed:{
+    ... mapState("notification", ["text","notificationType", "time"])
+  },
+  watch:{
+    time (newText, oldText) {
+
+      console.log(newText,oldText)
+      this.snackbar = false;
+      this.snackbar = newText !== ""
+    }
+  }
+});
 
 </script>
 

@@ -4,6 +4,8 @@ import moment, {Moment} from "moment";
 import {RootState} from "@/stores/store";
 import BookingUtils from "@/utils/booking-utils";
 import Room from "@/models/Room";
+import Notifications from "@/components/Notifications.vue";
+import {notify} from "@/stores/notification-module";
 
 
 export interface BookingsState {
@@ -71,6 +73,8 @@ const actions: ActionTree<BookingsState, RootState> = {
         console.log("Booking to delete", booking)
         if (!rootState.user.user) {
             console.log("Failed to create booking because of missing user")
+
+            await notify(dispatch, "Failed to delete the booking.","error")
             return
         }
         booking.user = rootState.user.user
@@ -78,6 +82,9 @@ const actions: ActionTree<BookingsState, RootState> = {
         await deleteRequest("/api/v1.0/bookings/" + booking.id)
 
         await dispatch("fetchBookings")
+
+        await notify(dispatch, "Deleted the booking.")
+
 
     },
     async saveBooking({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Partial<Booking>) {
@@ -92,6 +99,7 @@ const actions: ActionTree<BookingsState, RootState> = {
 
 
         if (response.status >= 400) {
+            await notify(dispatch, "Failed to save the booking.","error")
             console.log("Failed to create booking", response.status)
             return
         }
@@ -99,8 +107,12 @@ const actions: ActionTree<BookingsState, RootState> = {
             await response.json()
             await dispatch("fetchBookings")
         } catch (e) {
+            await notify(dispatch, "Failed to save the booking.","error")
             console.log("Failed to create booking", e)
         }
+
+
+        await notify(dispatch, "Saved the booking.")
 
     }
 }

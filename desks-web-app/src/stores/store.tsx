@@ -5,6 +5,7 @@ import {UserState, userModule} from "@/stores/user-module";
 import {roomsModule} from "@/stores/rooms-module";
 import {bookingsModule} from "@/stores/booking-module";
 import {configurationModule} from "@/stores/configuration-module";
+import {notificationModule} from "@/stores/notification-module";
 
 
 export interface RootState {
@@ -19,7 +20,8 @@ export const store = new Vuex.Store<RootState>({
             user: userModule,
             rooms: roomsModule,
             bookings: bookingsModule,
-            configuration: configurationModule
+            configuration: configurationModule,
+            notification: notificationModule
         }
     }
 );
