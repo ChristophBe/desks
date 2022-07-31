@@ -14,7 +14,7 @@
           <span>{{ booking.room.name }}</span>
           <v-spacer></v-spacer>
           <span class="mr-4">
-            {{ formatTime(booking.start) }} - {{ formatTime(booking.end) }}
+            {{ $format.timeRange(booking.start, booking.end) }}
           </span>
 
         </v-expansion-panel-title>
@@ -43,7 +43,8 @@
     <v-alert v-if="upcomingBookings.length  <= 0">
       You have currently no upcoming desk bookings.
     </v-alert>
-    <BookingsTable v-else :bookings="upcomingBookings" @editBooking="(booking) => openEditeBookingDialog(booking)"></BookingsTable>
+    <BookingsTable v-else :bookings="upcomingBookings"
+                   @editBooking="(booking) => openEditeBookingDialog(booking)"></BookingsTable>
   </v-card>
 </template>
 
@@ -51,21 +52,20 @@
 
 import {defineComponent} from "vue";
 import {mapActions, mapGetters} from "vuex";
-import moment from "moment";
 import BookingsTable from "@/components/booking-components/BookingsTable.vue";
 import AlsoInTheRoom from "@/components/booking-components/AlsoInTheRoom.vue";
 import Booking from "@/models/Booking";
 import BookingForm from "@/components/booking-components/BookingForm.vue";
 
-interface bookingViewData{
-  showBookingFormDialog:boolean
-  bookingToEdit:Booking|null
+interface bookingViewData {
+  showBookingFormDialog: boolean
+  bookingToEdit: Booking | null
 }
 
 export default defineComponent({
   name: "BookingsView",
   components: {AlsoInTheRoom, BookingsTable, BookingForm},
-  data: ():bookingViewData  => ({
+  data: (): bookingViewData => ({
     showBookingFormDialog: false,
     bookingToEdit: null
   }),
@@ -74,18 +74,12 @@ export default defineComponent({
     this.fetchBookings()
   },
   methods: {
-    ...mapActions("bookings",["fetchBookings"]),
-    formatDate(date:Date) {
-      return moment(date).format("DD.MM.YYYY")
-    },
-    formatTime(date:Date) {
-      return moment(date).format("HH:mm")
-    },
-    openCreateBookingDialog(){
+    ...mapActions("bookings", ["fetchBookings"]),
+    openCreateBookingDialog() {
       this.showBookingFormDialog = true
       this.bookingToEdit = null;
     },
-    openEditeBookingDialog(booking:Booking){
+    openEditeBookingDialog(booking: Booking) {
       this.showBookingFormDialog = true
       this.bookingToEdit = booking
     }

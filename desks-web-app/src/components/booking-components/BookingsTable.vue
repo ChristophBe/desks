@@ -24,9 +24,9 @@
         :key="item.id"
     >
       <td>{{ item.room.name }}</td>
-      <td>{{ formatDate(item.start) }}</td>
-      <td>{{ formatTime(item.start) }}</td>
-      <td>{{ formatTime(item.end) }}</td>
+      <td>{{ $format.date(item.start) }}</td>
+      <td>{{ $format.time(item.start) }}</td>
+      <td>{{ $format.time(item.end) }}</td>
       <td class="d-flex justify-end align-center">
         <v-btn
             icon
@@ -40,7 +40,8 @@
                 <v-list-item-avatar start icon="mdi-pencil"></v-list-item-avatar>
                 <v-list-item-title>Edit</v-list-item-title>
               </v-list-item>
-              <delete-booking-menu-item :booking="item" :disabled="isCurrentOrPastBooking(item)"></delete-booking-menu-item>
+              <delete-booking-menu-item :booking="item"
+                                        :disabled="isCurrentOrPastBooking(item)"></delete-booking-menu-item>
             </v-list>
           </v-menu>
         </v-btn>
@@ -64,17 +65,10 @@ export default defineComponent({
     bookings: Array
   },
   methods: {
-    formatDate(date:Date) {
-      return moment(date).format("DD.MM.YYYY")
-    },
-    formatTime(date:Date) {
-      return moment(date).format("HH:mm")
-    },
-
-    editBooking(booking:Booking){
+    editBooking(booking: Booking) {
       this.$emit("editBooking", booking)
     },
-    isCurrentOrPastBooking(booking:Booking):boolean{
+    isCurrentOrPastBooking(booking: Booking): boolean {
       return moment(booking?.start).isBefore(moment.now())
     },
   }
