@@ -4,8 +4,8 @@ import moment, {Moment} from "moment";
 import {RootState} from "@/stores/store";
 import BookingUtils from "@/utils/booking-utils";
 import Room from "@/models/Room";
-import Notifications from "@/components/Notifications.vue";
 import {notify} from "@/stores/notification-module";
+import {deleteData, getData, patchData, postData} from "@/utils/request-utils";
 
 
 export interface BookingsState {
@@ -40,7 +40,7 @@ const getters: GetterTree<BookingsState, RootState> = {
         if (!state.bookingsFetched) {
             throw "bookings were not fetched"
         }
-        return (room: Room, start: Moment, end: Moment, skipBookingIds:number[]=[]) => {
+        return (room: Room, start: Moment, end: Moment, skipBookingIds: number[] = []) => {
             return BookingUtils.findOverlaps(state.bookings, start, end)
                 .filter(booking => !skipBookingIds.includes(booking.id))
                 .filter(booking => booking.room.id === room.id);
@@ -54,9 +54,9 @@ const actions: ActionTree<BookingsState, RootState> = {
         if (!rootState.user.user) {
             return
         }
-        const response = await fetch(`/api/v1.0/users/${rootState.user.user.id}/bookings`)
+        const response = await getData(`/api/v1.0/users/${rootState.user.user.id}/bookings`)
         if (response.status >= 400) {
-            console.log("Failed to fetch bookinges", response.status)
+            console.log("Failed to fetch bookings", response.status)
             return
         }
         try {
@@ -68,38 +68,42 @@ const actions: ActionTree<BookingsState, RootState> = {
 
     },
 
-    async deleteBooking({dispatch,state,rootState}: ActionContext<BookingsState, RootState>, booking: Booking){
+    async deleteBooking({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Booking) {
 
         console.log("Booking to delete", booking)
         if (!rootState.user.user) {
             console.log("Failed to create booking because of missing user")
 
-            await notify(dispatch, "Failed to delete the booking.","error")
+            await notify(dispatch, "Failed to delete the booking.", "error")
             return
         }
         booking.user = rootState.user.user
 
-        await deleteRequest("/api/v1.0/bookings/" + booking.id)
-
+        const response = await deleteData("/api/v1.0/bookings/" + booking.id)
+        if (response.status >= 400) {
+            await notify(dispatch, "Failed to delete the booking.", "error")
+            return
+        }
         await dispatch("fetchBookings")
-
         await notify(dispatch, "Deleted the booking.")
-
-
     },
-    async saveBooking({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Partial<Booking>) {
+    saveBooking: async function ({
+                                     dispatch,
+                                     state,
+                                     rootState
+                                 }: ActionContext<BookingsState, RootState>, booking: Partial<Booking>) {
         if (!rootState.user.user) {
             console.log("Failed to create booking because of missing user")
             return
         }
         booking.user = rootState.user.user
         const response = booking.id
-            ? await patchData("/api/v1.0/bookings/"+ booking.id.toString(), booking)
+            ? await patchData("/api/v1.0/bookings/" + booking.id.toString(), booking)
             : await postData("/api/v1.0/bookings", booking);
 
 
         if (response.status >= 400) {
-            await notify(dispatch, "Failed to save the booking.","error")
+            await notify(dispatch, "Failed to save the booking.", "error")
             console.log("Failed to create booking", response.status)
             return
         }
@@ -107,13 +111,10 @@ const actions: ActionTree<BookingsState, RootState> = {
             await response.json()
             await dispatch("fetchBookings")
         } catch (e) {
-            await notify(dispatch, "Failed to save the booking.","error")
+            await notify(dispatch, "Failed to save the booking.", "error")
             console.log("Failed to create booking", e)
         }
-
-
         await notify(dispatch, "Saved the booking.")
-
     }
 }
 export const bookingsModule: Module<BookingsState, RootState> = {
@@ -122,57 +123,4 @@ export const bookingsModule: Module<BookingsState, RootState> = {
     mutations,
     getters,
     actions
-}
-
-
-// Example POST method implementation:
-async function postData(url = '', data = {}) {
-    // Default options are marked with *
-    return await fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
-    });
-}
-
-// Example POST method implementation:
-async function patchData(url = '', data = {}) {
-    // Default options are marked with *
-    return await fetch(url, {
-        method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
-    });
-}
-// Example POST method implementation:
-async function deleteRequest(url = '') {
-    // Default options are marked with *
-    return await fetch(url, {
-        method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    });
 }
