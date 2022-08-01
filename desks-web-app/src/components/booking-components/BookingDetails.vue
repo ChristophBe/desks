@@ -9,7 +9,7 @@
       <booking-context-menu activator="parent" :booking="booking" @edit="$emit('edit')" @deleted="$emit('close')"></booking-context-menu>
     </v-btn>
     </v-card-title>
-    <v-list density="compact">
+    <v-list>
       <v-list-item>
         <v-list-item-avatar start icon="mdi-calendar"></v-list-item-avatar>
         <v-list-item-header>
@@ -30,13 +30,11 @@
     <v-card-title class="mt-4">
       Colleagues
     </v-card-title>
-    <also-in-the-room :date="booking.start" :room-id="booking.room.id" density="compact"></also-in-the-room>
-
+    <also-in-the-room :date="booking.start" :room-id="booking.room.id"></also-in-the-room>
     <v-card-actions>
       <v-btn @click="$emit('close')">
         Close
       </v-btn>
-
     </v-card-actions>
   </v-card>
 </template>
