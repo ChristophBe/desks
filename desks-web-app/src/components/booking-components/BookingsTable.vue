@@ -22,6 +22,7 @@
     <tr
         v-for="item in bookings"
         :key="item.id"
+        @click="$emit('openBooking', item)"
     >
       <td>{{ item.room.name }}</td>
       <td>{{ $format.date(item.start) }}</td>
@@ -33,17 +34,7 @@
             elevation="0"
         >
           <v-icon>mdi-dots-vertical</v-icon>
-
-          <v-menu activator="parent">
-            <v-list density="compact">
-              <v-list-item class="align-center" @click="editBooking(item)" :disabled="isCurrentOrPastBooking(item)">
-                <v-list-item-avatar start icon="mdi-pencil"></v-list-item-avatar>
-                <v-list-item-title>Edit</v-list-item-title>
-              </v-list-item>
-              <delete-booking-menu-item :booking="item"
-                                        :disabled="isCurrentOrPastBooking(item)"></delete-booking-menu-item>
-            </v-list>
-          </v-menu>
+          <booking-context-menu activator="parent" :booking="item" @edit="editBooking(item)"></booking-context-menu>
         </v-btn>
       </td>
     </tr>
@@ -53,13 +44,12 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import moment from "moment";
-import DeleteBookingMenuItem from "@/components/booking-components/DeleteBookingMenuItem.vue";
 import Booking from "@/models/Booking";
+import BookingContextMenu from "@/components/booking-components/BookingContextMenu.vue";
 
 export default defineComponent({
   name: "BookingsTable",
-  components: {DeleteBookingMenuItem},
+  components: {BookingContextMenu},
   // type inference enabled
   props: {
     bookings: Array
@@ -68,9 +58,7 @@ export default defineComponent({
     editBooking(booking: Booking) {
       this.$emit("editBooking", booking)
     },
-    isCurrentOrPastBooking(booking: Booking): boolean {
-      return moment(booking?.start).isBefore(moment.now())
-    },
+
   }
 
 })

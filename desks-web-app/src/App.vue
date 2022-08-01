@@ -8,10 +8,9 @@
           color="primary"
           size="48"
       >
-        <span
-            class="white--text text-h5">{{
+        {{
             user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
-          }}</span>
+        }}
       </v-avatar>
     </v-app-bar>
     <v-main>
