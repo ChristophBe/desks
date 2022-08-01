@@ -27,9 +27,8 @@ const notificationMutations: MutationTree<NotificationState> = {
 };
 
 const notificationActions: ActionTree<NotificationState, RootState> = {
-    async notify({commit}: ActionContext<NotificationState, RootState>, notification: Notification) {
-        commit('notify', notification)
-
+    async notify({commit}: ActionContext<NotificationState, RootState>, notification: Notification ) {
+        commit('notify',notification)
 
     },
 }
