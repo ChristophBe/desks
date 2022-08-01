@@ -2,6 +2,7 @@ import {ActionContext, ActionTree, Module, MutationTree} from "vuex";
 
 import Room from "@/models/Room";
 import {RootState} from "@/stores/store";
+import {getData} from "@/utils/request-utils";
 
 
 export interface RoomsState {
@@ -32,7 +33,7 @@ const actions: ActionTree<RoomsState, RootState> = {
         }
         commit("loading")
 
-        const response = await fetch("/api/v1.0/rooms")
+        const response = await getData("/api/v1.0/rooms")
         if (response.status >= 400) {
             console.log("Failed to fetch rooms", response.status)
             return

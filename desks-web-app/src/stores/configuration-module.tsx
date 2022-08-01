@@ -1,13 +1,11 @@
-import {ActionContext, ActionTree, GetterTree, Module, MutationTree} from "vuex";
-import Booking from "@/models/Booking";
-import moment from "moment";
+import {ActionContext, ActionTree, Module, MutationTree} from "vuex";
 import {RootState} from "@/stores/store";
 import FrontendConfiguration from "@/dtos/FrontendConfigurationDto";
-
+import {getData} from "@/utils/request-utils";
 
 export interface ConfigurationState {
     loading: boolean
-    configuration: FrontendConfiguration|null
+    configuration: FrontendConfiguration | null
 }
 
 const state: ConfigurationState = {
@@ -29,7 +27,7 @@ const actions: ActionTree<ConfigurationState, RootState> = {
 
     async fetchConfiguration({commit}: ActionContext<ConfigurationState, RootState>) {
 
-        const response = await fetch(`/api/v1.0/configuration`)
+        const response = await getData(`/api/v1.0/configuration`)
         if (response.status >= 400) {
             console.log("Failed to fetch configuration", response.status)
             return
