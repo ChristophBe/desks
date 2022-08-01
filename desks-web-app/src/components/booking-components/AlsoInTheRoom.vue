@@ -1,7 +1,7 @@
 <template>
   <v-progress-circular v-if="loading" indeterminate="" class="mx-4"></v-progress-circular>
   <v-alert v-else-if="bookings.length <= 0" class="mx-4">There are no other bookings for the same office.</v-alert>
-  <v-list :density="density" v-else>
+  <v-list v-else>
     <v-list-item two-line v-for="booking in bookings" :key="booking.id">
       <v-list-item-avatar start>
         <v-avatar color="primary">
