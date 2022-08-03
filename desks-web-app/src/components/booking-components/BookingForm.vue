@@ -8,17 +8,10 @@
     <v-card-title v-else>
       Book a Desk
     </v-card-title>
-    <div v-if="roomsLoading || configurationLoading">
-      <v-progress-circular
-          indeterminate
-          color="primary"
-      ></v-progress-circular>
-    </div>
+
     <v-form
-        v-else
         ref="form"
         v-model="valid"
-        @submit.prevent="submit"
         @change="validate"
         lazy-validation
     >
@@ -75,7 +68,7 @@
           <v-alert v-if="hasOwnOverlaps"
                    density="comfortable"
                    type="error"
-                   variant="contained-text"
+                   variant="text"
                    class="mb-2"
           >
             You already have booked a desk in the selected <br/>room for the selected timeframe.
@@ -90,7 +83,7 @@
 
       <v-card-actions>
         <v-btn
-            :disabled="!valid || hasOwnOverlaps"
+            :disabled="!valid"
             @click="submit"
         >
           {{ booking? "Save": "Book"}}
@@ -102,7 +95,6 @@
         </v-btn>
 
       </v-card-actions>
-
     </v-form>
   </v-card>
 </template>
@@ -122,10 +114,13 @@ export default defineComponent({
   props: {
     booking: {
       type: Object
+    },
+    defaults: {
+      type: Object
     }
   },
   data: () => ({
-    valid: false,
+    valid: true,
     date: moment().add(1, 'days').format("YYYY-MM-DD"),
     room: null,
     start: '09:00',
@@ -134,28 +129,43 @@ export default defineComponent({
   }),
 
   mounted() {
-    this.fetchRooms()
-    this.fetchConfiguration()
-
     if(this.booking != null){
       this.room = this.booking.room.id;
       this.date = moment(this.booking.start).format("YYYY-MM-DD");
       this.start = moment(this.booking.start).format("HH:mm");
       this.end = moment(this.booking.end).format("HH:mm");
-      const form = this.$refs.form as HTMLFormElement
-      form.validate()
+      this.validate()
+    }else {
+      this.setDefaults()
+
     }
   },
   computed: {
-    ...mapState('rooms', {rooms: 'rooms', roomsLoading: 'loading'}),
-    ...mapState('configuration', {configuration: 'configuration', configurationLoading: 'loading'}),
+    ...mapState('rooms', {rooms: 'rooms'}),
+    ...mapState('configuration', {configuration: 'configuration'}),
     ...mapGetters('bookings', {getOverlaps: 'getOverlappingBookings'})
   },
-  methods: {
 
+  methods: {
     ...mapActions("rooms",["fetchRooms"]),
     ...mapActions("configuration",["fetchConfiguration"]),
     ...mapActions("bookings",["saveBooking"]),
+
+    setDefaults(){
+      if(this.booking == null && this.defaults) {
+        this.start = moment(this.defaults.start).utc(false).format("HH:mm");
+        this.end = moment(this.defaults.end).utc(false).format("HH:mm");
+
+        console.log("defaults", this.defaults,moment(this.defaults.start),moment(this.defaults.end), this.start,this.end)
+        if (this.defaults.room) {
+          if (this.rooms.length <= 0){
+            this.rooms = [this.defaults.room]
+          }
+          this.room = this.defaults.room.id
+        }
+        this.validate()
+      }
+    },
     endValidationRule(v:string) {
       const start = moment().add(this.start);
       const end = moment().add(v);
@@ -171,15 +181,16 @@ export default defineComponent({
       return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days")
     },
     validate() {
-
       const form = this.$refs.form as HTMLFormElement
-      form.validate()
+      if(form){
+        form.validate()
+      }
+
       const start = this.getStartDate()
       const end = this.getEndDate()
       const room = this.getSelectedRoom();
       const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end, this.booking ? [this.booking.id] :[]);
       this.hasOwnOverlaps = room !== null ? overlaps.length > 0 : false;
-
     },
     getSelectedRoom() {
       return this.rooms.find((r:Room)=> this.room! === r.id)
