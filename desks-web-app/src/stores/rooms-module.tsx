@@ -28,7 +28,7 @@ const actions: ActionTree<RoomsState, RootState> = {
 
     async fetchRooms({commit, state}: ActionContext<RoomsState, RootState>) {
 
-        if (state.rooms.length > 0) {
+        if(state.loading || state.rooms.length > 0) {
             return
         }
         commit("loading")

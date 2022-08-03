@@ -129,16 +129,21 @@ export default defineComponent({
   }),
 
   mounted() {
+
+    this.fetchRooms();
+    this.fetchBookingDefaults();
+    this.fetchConfiguration();
     if(this.booking != null){
       this.room = this.booking.room.id;
       this.date = moment(this.booking.start).format("YYYY-MM-DD");
       this.start = moment(this.booking.start).format("HH:mm");
       this.end = moment(this.booking.end).format("HH:mm");
-      this.validate()
+
     }else {
       this.setDefaults()
 
     }
+    this.validate()
   },
   computed: {
     ...mapState('rooms', {rooms: 'rooms'}),
@@ -149,21 +154,18 @@ export default defineComponent({
   methods: {
     ...mapActions("rooms",["fetchRooms"]),
     ...mapActions("configuration",["fetchConfiguration"]),
+    ...mapActions("defaults",["fetchBookingDefaults"]),
     ...mapActions("bookings",["saveBooking"]),
 
     setDefaults(){
       if(this.booking == null && this.defaults) {
-        this.start = moment(this.defaults.start).utc(false).format("HH:mm");
-        this.end = moment(this.defaults.end).utc(false).format("HH:mm");
+        this.date = moment(this.defaults.start).format("YYYY-MM-DD");
+        this.start = moment(this.defaults.start).format("HH:mm");
+        this.end = moment(this.defaults.end).format("HH:mm");
 
-        console.log("defaults", this.defaults,moment(this.defaults.start),moment(this.defaults.end), this.start,this.end)
         if (this.defaults.room) {
-          if (this.rooms.length <= 0){
-            this.rooms = [this.defaults.room]
-          }
           this.room = this.defaults.room.id
         }
-        this.validate()
       }
     },
     endValidationRule(v:string) {

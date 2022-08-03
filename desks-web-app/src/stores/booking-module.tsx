@@ -41,9 +41,9 @@ const getters: GetterTree<BookingsState, RootState> = {
             throw "bookings were not fetched"
         }
         return (room: Room, start: Moment, end: Moment, skipBookingIds: number[] = []) => {
-            return BookingUtils.findOverlaps(state.bookings, start, end)
+            return room ? BookingUtils.findOverlaps(state.bookings, start, end)
                 .filter(booking => !skipBookingIds.includes(booking.id))
-                .filter(booking => booking.room.id === room.id);
+                .filter(booking => booking.room.id === room.id): false;
         }
     }
 }

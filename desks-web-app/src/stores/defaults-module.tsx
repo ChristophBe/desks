@@ -32,6 +32,10 @@ const mutations: MutationTree<DefaultsState> = {
 const actions: ActionTree<DefaultsState, RootState> = {
 
     async fetchBookingDefaults({state,commit, rootState}: ActionContext<DefaultsState, RootState>) {
+        if(state.bookingDefaultsLoading || state.bookingDefaultsFetched){
+            return
+        }
+
         commit("bookingDefaultsLoading");
 
         if (!rootState.user.user) {
@@ -42,7 +46,7 @@ const actions: ActionTree<DefaultsState, RootState> = {
         if (response.status >= 400) {
             console.log("Failed to fetch configuration", response.status)
 
-            commit('setBookingDefaults', state.bookingDefaults)
+            commit('setBookingDefaults', null)
             return
         }
         try {
