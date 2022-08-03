@@ -48,6 +48,7 @@ func initRouter() *mux.Router {
 	router.Path(urlPrefix + "/rooms/{id}/bookings").Handler(withAuth(handlers.GetBookingsByRoomAndDate)).Methods(http.MethodGet)
 
 	router.Path(urlPrefix + "/users/{id}/bookings").Handler(withAuth(handlers.GetBookingsByUser)).Methods(http.MethodGet)
+	router.Path(urlPrefix + "/users/{id}/bookings/defaults").Handler(withAuth(handlers.GetBookingDefaults)).Methods(http.MethodGet)
 	router.Path(urlPrefix + "/bookings").Handler(withAuth(handlers.PostBooking)).Methods(http.MethodPost)
 	router.Path(urlPrefix + "/bookings/{id}").Handler(withAuth(handlers.DeleteBooking)).Methods(http.MethodDelete)
 	router.Path(urlPrefix + "/bookings/{id}").Handler(withAuth(handlers.PatchBooking)).Methods(http.MethodPatch)

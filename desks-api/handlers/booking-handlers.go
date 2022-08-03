@@ -233,3 +233,29 @@ func GetBookingsByRoomAndDate(_ models.User, writer http.ResponseWriter, request
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
 }
+func GetBookingDefaults(user models.User, writer http.ResponseWriter, request *http.Request) {
+	userId, err := util.GetIntegerUrlParameter(request, "id")
+
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+	if userId != user.Id {
+
+		err = util.Unauthorized(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	defaults, err := services.NewDetermineDefaultsService().DetermineBookingDefaults(request.Context(), user)
+	if err != nil {
+		err = util.NotFound(err)
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
+
+	if err = util.JsonResponseWriter(defaults, http.StatusOK, writer, request); err != nil {
+		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
+	}
+}
