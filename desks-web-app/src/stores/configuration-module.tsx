@@ -27,6 +27,10 @@ const actions: ActionTree<ConfigurationState, RootState> = {
 
     async fetchConfiguration({commit}: ActionContext<ConfigurationState, RootState>) {
 
+        if(state.loading || state.configuration ){
+            return
+        }
+        commit("loading")
         const response = await getData(`/api/v1.0/configuration`)
         if (response.status >= 400) {
             console.log("Failed to fetch configuration", response.status)

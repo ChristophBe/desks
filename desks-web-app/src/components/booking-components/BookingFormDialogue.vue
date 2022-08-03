@@ -2,7 +2,6 @@
   <div v-if="roomsLoading || configurationLoading || defaultsLoading">
     <v-progress-circular
         indeterminate
-        color="primary"
     ></v-progress-circular>
   </div>
   <booking-form v-else :booking="booking" :defaults="defaults" @close="$emit('close')"></booking-form>

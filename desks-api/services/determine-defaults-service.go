@@ -82,9 +82,10 @@ func (d determineDefaultsServiceImpl) findMedianTime(bookings []models.Booking, 
 	}
 	timeOffsets := make([]int, len(bookings))
 	for i, booking := range bookings {
-
 		bookingTime := getTimeValue(booking)
-		timeOffsets[i] = bookingTime.Hour()*60 + bookingTime.Minute()
+		hours, minute, _ := bookingTime.Clock()
+
+		timeOffsets[i] = hours*60 + minute
 	}
 
 	sort.Ints(timeOffsets) // sort the timeOffsets
@@ -92,7 +93,10 @@ func (d determineDefaultsServiceImpl) findMedianTime(bookings []models.Booking, 
 	index := len(timeOffsets) / 2
 
 	medianTimeOffset := timeOffsets[index]
+	now := time.Now()
+	resultTime = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	resultTime = resultTime.Add(time.Duration(medianTimeOffset) * time.Minute)
+	resultTime = resultTime.Add(24 * time.Hour)
 	resultTime = resultTime.Round(15 * time.Minute)
 	return
 }
