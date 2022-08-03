@@ -3,7 +3,7 @@
       v-model="showBookingFormDialog"
       persistent
   >
-    <BookingForm @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingForm>
+    <BookingFormDialogue @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingFormDialogue>
   </v-dialog>
 
   <v-dialog
@@ -69,8 +69,8 @@ import {mapActions, mapGetters} from "vuex";
 import BookingsTable from "@/components/booking-components/BookingsTable.vue";
 import AlsoInTheRoom from "@/components/booking-components/AlsoInTheRoom.vue";
 import Booking from "@/models/Booking";
-import BookingForm from "@/components/booking-components/BookingForm.vue";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
+import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
 
 
 interface bookingViewData{
@@ -82,7 +82,7 @@ interface bookingViewData{
 
 export default defineComponent({
   name: "BookingsView",
-  components: {BookingDetails, AlsoInTheRoom, BookingsTable, BookingForm},
+  components: {BookingFormDialogue, BookingDetails, AlsoInTheRoom, BookingsTable},
   data: ():bookingViewData  => ({
     showBookingFormDialog: false,
     bookingToEdit: null,

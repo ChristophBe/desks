@@ -2,7 +2,7 @@
   <v-alert v-if="room"
            density="comfortable"
            :type="calculateType(overlappingBookings,room.capacity)"
-           variant="contained-text"
+           variant="text"
            class="mb-2"
   >
     <div>{{ overlappingBookings }} / {{ room.capacity }} desks booked</div>
@@ -63,10 +63,6 @@ export default defineComponent({
   computed: mapState('user', ['user']),
 
   methods: {
-
-    formatTime(date: Date) {
-      return moment(date).format("HH:mm")
-    },
 
     async loadAndCheck() {
       console.log("load bookings for room and day")
