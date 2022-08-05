@@ -2,7 +2,7 @@
 
   <v-card class="card">
 
-    <v-card-title v-if="booking">
+    <v-card-title v-if="booking && booking.id">
       Edit Booking
     </v-card-title>
     <v-card-title v-else>
@@ -86,7 +86,7 @@
             :disabled="!valid"
             @click="submit"
         >
-          {{ booking? "Save": "Book"}}
+          {{ booking && booking.id? "Save": "Book"}}
         </v-btn>
         <v-btn
             @click="$emit('close')"
