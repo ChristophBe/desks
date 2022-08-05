@@ -5,61 +5,90 @@
   >
     <BookingFormDialogue @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingFormDialogue>
   </v-dialog>
-
   <v-dialog
       v-model="showBookingDialog"
   >
-    <booking-details @close="showBookingDialog = false" :booking="bookingToShow" @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
+    <booking-details @close="showBookingDialog = false" :booking="bookingToShow"
+                     @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
   </v-dialog>
-  <v-card v-if="todaysBookings.length > 0" class="mb-3">
-    <v-card-title>Today</v-card-title>
+  <v-container>
+    <v-row class="mb-3">
+      <v-col cols="6" xm="12">
+        <v-card v-if="todaysBookings.length > 0">
+          <v-card-item>
+            <div class="d-flex justify-space-between align-center">
+              <div>
+                <v-card-title>Desk Availability</v-card-title>
+                <v-card-subtitle>HotSprings Office</v-card-subtitle>
+              </div>
+              <v-chip color="success">1/7 desks booked today</v-chip>
+            </div>
+          </v-card-item>
 
-    <v-expansion-panels>
-      <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
-        <v-expansion-panel-title class="pl-4">
-          <span>{{ booking.room.name }}</span>
-          <v-spacer></v-spacer>
+          <v-card-actions>
+            <v-btn variant="text">
+              Book desk
+            </v-btn>
+          </v-card-actions>
 
-          <span class="mr-4">
-            {{ $format.timeRange(booking.start, booking.end) }}
-          </span>
+        </v-card>
+      </v-col>
+      <v-col cols="6" xm="12">
+        <v-card v-if="todaysBookings.length > 0">
+          <v-card-title>Today</v-card-title>
 
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
+          <v-list>
+            <v-list-item
+                v-for="booking in todaysBookings"
+                :key="booking.id"
+                @click="openShowBookingDialog(booking)"
+            >
+              <v-list-item-header>
+                <v-list-item-title>{{ booking.room.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+          </v-list>
+        </v-card>
 
-          <AlsoInTheRoom :room-id="booking.room.id" :date="booking.start"></AlsoInTheRoom>
-        </v-expansion-panel-text>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex">
 
-      </v-expansion-panel>
-    </v-expansion-panels>
-  </v-card>
-  <v-card>
-    <v-card-title class="d-flex">
+            <div class="mr-auto">
+              My Desk Bookings
+            </div>
 
-      <div class="mr-auto">
-        My Desk Bookings
-      </div>
+            <v-btn
+                icon
+                elevation="0"
+                @click="openCreateBookingDialog()"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </v-card-title>
 
-      <v-btn
-          icon
-          elevation="0"
-          @click="openCreateBookingDialog()"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-card-title>
+          <v-card-text v-if="upcomingBookings.length <= 0">
+            <v-alert>
+              You have no upcoming desk bookings.
+            </v-alert>
+          </v-card-text>
+          <BookingsTable
+              v-else
+              :bookings="upcomingBookings"
+              @editBooking="(booking) => openEditeBookingDialog(booking)"
+              @openBooking="(booking) => openShowBookingDialog(booking)"
+          ></BookingsTable>
+        </v-card>
+      </v-col>
+    </v-row>
 
-    <v-alert v-if="upcomingBookings.length  <= 0">
-      You have currently no upcoming desk bookings.
-    </v-alert>
+  </v-container>
 
-    <BookingsTable
-        v-else
-        :bookings="upcomingBookings"
-        @editBooking="(booking) => openEditeBookingDialog(booking)"
-        @openBooking="(booking) => openShowBookingDialog(booking)"
-    ></BookingsTable>
-  </v-card>
+
 </template>
 
 <script lang="ts">
@@ -73,21 +102,23 @@ import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
 
 
-interface bookingViewData{
-  showBookingFormDialog:boolean
-  bookingToEdit:Booking|null
-  showBookingDialog:boolean
-  bookingToShow:Booking|null
+interface bookingViewData {
+  showBookingFormDialog: boolean
+  bookingToEdit: Booking | null
+  showBookingDialog: boolean
+  bookingToShow: Booking | null
+  show: boolean
 }
 
 export default defineComponent({
   name: "BookingsView",
   components: {BookingFormDialogue, BookingDetails, AlsoInTheRoom, BookingsTable},
-  data: ():bookingViewData  => ({
+  data: (): bookingViewData => ({
     showBookingFormDialog: false,
     bookingToEdit: null,
-    showBookingDialog:false,
-    bookingToShow:null
+    showBookingDialog: false,
+    bookingToShow: null,
+    show: false
   }),
   computed: mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
   mounted() {
@@ -105,7 +136,7 @@ export default defineComponent({
       this.showBookingDialog = false
       this.bookingToEdit = booking
     },
-    openShowBookingDialog(booking:Booking){
+    openShowBookingDialog(booking: Booking) {
       this.showBookingFormDialog = false
       this.showBookingDialog = true
       this.bookingToShow = booking
