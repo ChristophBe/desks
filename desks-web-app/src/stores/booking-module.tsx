@@ -27,6 +27,7 @@ const mutations: MutationTree<BookingsState> = {
     setBookings(state: BookingsState, bookings: Array<Booking>) {
         state.bookings = bookings
         state.loading = false
+        state.bookingsFetched = true
     }
 }
 const getters: GetterTree<BookingsState, RootState> = {
@@ -43,14 +44,14 @@ const getters: GetterTree<BookingsState, RootState> = {
         return (room: Room, start: Moment, end: Moment, skipBookingIds: number[] = []) => {
             return room ? BookingUtils.findOverlaps(state.bookings, start, end)
                 .filter(booking => !skipBookingIds.includes(booking.id))
-                .filter(booking => booking.room.id === room.id): false;
+                .filter(booking => booking.room.id === room.id) : false;
         }
     }
 }
 const actions: ActionTree<BookingsState, RootState> = {
 
     async fetchBookings({commit, rootState}: ActionContext<BookingsState, RootState>) {
-
+        commit('loading')
         if (!rootState.user.user) {
             return
         }
@@ -67,25 +68,6 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
 
     },
-    async fetchBookingDefaults({commit, rootState}: ActionContext<BookingsState, RootState>) {
-
-        if (!rootState.user.user) {
-            return
-        }
-        const response = await getData(`/api/v1.0/users/${rootState.user.user.id}/bookings`)
-        if (response.status >= 400) {
-            console.log("Failed to fetch bookings", response.status)
-            return
-        }
-        try {
-            const bookings = await response.json()
-            commit('setBookings', bookings)
-        } catch (e) {
-            console.log("Failed to fetch bookings", e)
-        }
-
-    },
-
     async deleteBooking({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Booking) {
 
         console.log("Booking to delete", booking)

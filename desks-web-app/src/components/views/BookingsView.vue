@@ -11,10 +11,12 @@
     <booking-details @close="showBookingDialog = false" :booking="bookingToShow"
                      @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
   </v-dialog>
-  <v-container>
+  <v-fade-transition>
 
+    <loading v-if="(loading && !bookingsFetched) || (bookingDefaultsLoading && !bookingDefaultsFetched)"></loading>
+    <v-container v-else>
 
-    <v-row class="mb-3" v-if="!loading">
+      <v-row class="mb-3">
         <v-col :cols="hasBookingsForToday() ? 6 : 12" xm="12">
           <desk-availabilty @book="openEditeBookingDialog"/>
         </v-col>
@@ -37,25 +39,24 @@
           </v-card>
         </v-col>
 
-    </v-row>
+      </v-row>
 
-    <v-row >
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex">
-            <div class="mr-auto">
-              My Desk Bookings
-            </div>
+      <v-row>
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex">
+              <div class="mr-auto">
+                My Desk Bookings
+              </div>
 
-            <v-btn
-                icon
-                elevation="0"
-                @click="openCreateBookingDialog()"
-            >
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </v-card-title>
-          <v-expand-transition>
+              <v-btn
+                  icon
+                  elevation="0"
+                  @click="openCreateBookingDialog()"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-card-title>
             <v-card-text v-if="upcomingBookings.length <= 0">
               <v-alert>
                 You have no upcoming desk bookings.
@@ -67,13 +68,13 @@
                 @editBooking="(booking) => openEditeBookingDialog(booking)"
                 @openBooking="(booking) => openShowBookingDialog(booking)"
             ></BookingsTable>
-          </v-expand-transition>
-        </v-card>
-      </v-col>
-    </v-row>
+          </v-card>
+        </v-col>
+      </v-row>
 
 
-  </v-container>
+    </v-container>
+  </v-fade-transition>
 
 
 </template>
@@ -87,6 +88,7 @@ import Booking from "@/models/Booking";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
 import DeskAvailabilty from "@/components/booking-components/DeskAvailabilityCard.vue";
+import Loading from "@/components/Loading.vue";
 
 
 interface bookingViewData {
@@ -99,7 +101,7 @@ interface bookingViewData {
 
 export default defineComponent({
   name: "BookingsView",
-  components: {DeskAvailabilty, BookingFormDialogue, BookingDetails, BookingsTable},
+  components: {DeskAvailabilty, BookingFormDialogue, BookingDetails, BookingsTable, Loading},
   data: (): bookingViewData => ({
     showBookingFormDialog: false,
     bookingToEdit: null,
@@ -107,10 +109,10 @@ export default defineComponent({
     bookingToShow: null,
     show: false
   }),
-  computed:{
-    ... mapState('bookings', ['loading']),
-    ... mapState('defaults', ['bookingDefaultsLoading']),
-    ... mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
+  computed: {
+    ...mapState('bookings', ['loading', "bookingsFetched"]),
+    ...mapState('defaults', ['bookingDefaultsLoading', 'bookingDefaultsFetched']),
+    ...mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
   },
   mounted() {
     this.fetchBookings()
@@ -134,7 +136,7 @@ export default defineComponent({
       this.showBookingDialog = true
       this.bookingToShow = booking
     },
-    hasBookingsForToday(){
+    hasBookingsForToday() {
       return this.todaysBookings.length > 0
     }
   }

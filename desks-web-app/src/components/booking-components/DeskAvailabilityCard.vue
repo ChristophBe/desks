@@ -7,7 +7,9 @@
           <v-card-subtitle>{{ bookingDefaults.room.name }}</v-card-subtitle>
         </div>
         <v-fade-transition>
-          <v-chip v-if="overlappingBookings !== null" :color="calculateType()">{{overlappingBookings}} / {{bookingDefaults.room.capacity}} desks booked today</v-chip>
+          <v-chip v-if="overlappingBookings !== null" :color="calculateType()">{{ overlappingBookings }} /
+            {{ bookingDefaults.room.capacity }} desks booked today
+          </v-chip>
         </v-fade-transition>
 
       </div>
@@ -26,29 +28,28 @@ import moment from "moment/moment";
 import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
 
-interface DeskAvailabilityState{
+interface DeskAvailabilityState {
   overlappingBookings: number | null
 }
 
 export default defineComponent({
   name: 'desk-availability',
-  data: () :DeskAvailabilityState=> ({
+  data: (): DeskAvailabilityState => ({
     overlappingBookings: null
   }),
-  computed:{
+  computed: {
     ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"])
   },
-  mounted(){
+  mounted() {
+    this.loadAndCheck()
     this.fetchBookingDefaults()
   },
-  watch:{
-    bookingDefaults(){
-      if(this.bookingDefaults){
-        this.loadAndCheck()
-      }
+  watch: {
+    bookingDefaults() {
+      this.loadAndCheck()
     }
   },
-  methods:{
+  methods: {
     ...mapActions("defaults", ["fetchBookingDefaults"]),
 
     booksForToday: function () {
@@ -66,13 +67,17 @@ export default defineComponent({
       }
       this.$emit("book", booking)
     },
-    roundToNextFiveMinutes(){
+    roundToNextFiveMinutes() {
       let now = moment().startOf("hour")
-      let min =( 5 * Math.floor( moment().diff(now,"minute") / 5 )) + 5
+      let min = (5 * Math.floor(moment().diff(now, "minute") / 5)) + 5
       return now.add(min, "minutes")
     },
 
     async loadAndCheck() {
+
+      if (!this.bookingDefaults) {
+        return
+      }
       console.log("load bookings for room and day")
       const res = await fetch(`/api/v1.0/rooms/${this.bookingDefaults.room?.id}/bookings?date=${moment().format('YYYY-MM-DD')}`)
       if (res.status >= 400) {
@@ -89,7 +94,7 @@ export default defineComponent({
       const start = moment().startOf("day")
       const end = moment().endOf("day")
 
-      console.log("test", start,end)
+      console.log("test", start, end)
       const overlaps = BookingUtils.findOverlaps(bookings, start, end)
       this.overlappingBookings = new Set(overlaps.map(booking => booking.user.id)).size
     },

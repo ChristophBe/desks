@@ -73,20 +73,20 @@
           >
             You already have booked a desk in the selected <br/>room for the selected timeframe.
           </v-alert>
-          <overlapping-bookings v-else :room="getSelectedRoom()" :date="date" :start="start"
+          <overlapping-bookings v-else
+                                :room="getSelectedRoom()"
+                                :date="date"
+                                :start="start"
                                 :end="end"></overlapping-bookings>
-
         </div>
-
-
       </v-card-text>
 
       <v-card-actions>
         <v-btn
-            :disabled="!valid"
+            :disabled="!valid || hasOwnOverlaps"
             @click="submit"
         >
-          {{ booking && booking.id? "Save": "Book"}}
+          {{ booking && booking.id ? "Save" : "Book" }}
         </v-btn>
         <v-btn
             @click="$emit('close')"
@@ -133,13 +133,13 @@ export default defineComponent({
     this.fetchRooms();
     this.fetchBookingDefaults();
     this.fetchConfiguration();
-    if(this.booking != null){
+    if (this.booking != null) {
       this.room = this.booking.room.id;
       this.date = moment(this.booking.start).format("YYYY-MM-DD");
       this.start = moment(this.booking.start).format("HH:mm");
       this.end = moment(this.booking.end).format("HH:mm");
 
-    }else {
+    } else {
       this.setDefaults()
 
     }
@@ -152,13 +152,13 @@ export default defineComponent({
   },
 
   methods: {
-    ...mapActions("rooms",["fetchRooms"]),
-    ...mapActions("configuration",["fetchConfiguration"]),
-    ...mapActions("defaults",["fetchBookingDefaults"]),
-    ...mapActions("bookings",["saveBooking"]),
+    ...mapActions("rooms", ["fetchRooms"]),
+    ...mapActions("configuration", ["fetchConfiguration"]),
+    ...mapActions("defaults", ["fetchBookingDefaults"]),
+    ...mapActions("bookings", ["saveBooking"]),
 
-    setDefaults(){
-      if(this.booking == null && this.defaults) {
+    setDefaults() {
+      if (this.booking == null && this.defaults) {
         this.date = moment(this.defaults.start).format("YYYY-MM-DD");
         this.start = moment(this.defaults.start).format("HH:mm");
         this.end = moment(this.defaults.end).format("HH:mm");
@@ -168,40 +168,40 @@ export default defineComponent({
         }
       }
     },
-    endValidationRule(v:string) {
+    endValidationRule(v: string) {
       const start = moment().add(this.start);
       const end = moment().add(v);
       return end.isAfter(start)
     },
     startValidationRule() {
-      return  this.getStartDate().isAfter(moment.now());
+      return this.getStartDate().isAfter(moment.now());
     },
-    dateMinValidationRule(v:string) {
+    dateMinValidationRule(v: string) {
       return moment(v).isSameOrAfter(moment.now(), "days")
     },
-    dateMaxValidationRule(v:string) {
+    dateMaxValidationRule(v: string) {
       return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days")
     },
     validate() {
       const form = this.$refs.form as HTMLFormElement
-      if(form){
+      if (form) {
         form.validate()
       }
 
       const start = this.getStartDate()
       const end = this.getEndDate()
       const room = this.getSelectedRoom();
-      const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end, this.booking ? [this.booking.id] :[]);
+      const overlaps = this.getOverlaps(this.getSelectedRoom(), start, end, this.booking && this.booking.id ? [this.booking.id] : []);
       this.hasOwnOverlaps = room !== null ? overlaps.length > 0 : false;
     },
     getSelectedRoom() {
-      return this.rooms.find((r:Room)=> this.room! === r.id)
+      return this.rooms.find((r: Room) => this.room! === r.id)
     },
-    getStartDate()  :Moment{
+    getStartDate(): Moment {
       return moment(this.date).add(this.start)
 
     },
-    getEndDate() :Moment{
+    getEndDate(): Moment {
       return moment(this.date).add(this.end)
 
     },
@@ -211,13 +211,13 @@ export default defineComponent({
         const start = this.getStartDate()
         const end = this.getEndDate()
         const room = this.getSelectedRoom()
-        const booking:Partial<Booking> = {
-          room:room,
+        const booking: Partial<Booking> = {
+          room: room,
           start: start.toDate(),
           end: end.toDate()
         }
 
-        if(this.booking){
+        if (this.booking) {
           booking.id = this.booking.id
         }
         this.saveBooking(booking)
