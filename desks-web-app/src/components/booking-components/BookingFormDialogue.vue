@@ -12,7 +12,7 @@ import {defineComponent} from "vue";
 import {mapActions, mapGetters, mapState} from "vuex";
 import BookingForm from "@/components/booking-components/BookingForm";
 
-export default defineComponent( {
+export default defineComponent({
   name: "booking-form-dialogue",
   components: {BookingForm},
   props: {
@@ -29,7 +29,7 @@ export default defineComponent( {
     ...mapState('rooms', {rooms: 'rooms', roomsLoading: 'loading'}),
     ...mapState('configuration', {configuration: 'configuration', configurationLoading: 'loading'}),
     ...mapState('defaults', {defaults: 'bookingDefaults', defaultsLoading: 'bookingDefaultsLoading'}),
-    ...mapGetters('bookings', {getOverlaps: 'getOverlappingBookings'})
+    ...mapGetters('bookings', {getOverlaps: 'getMyOverlappingBookings'})
   },
   methods: {
     ...mapActions("rooms", ["fetchRooms"]),

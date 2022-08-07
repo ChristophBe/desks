@@ -26,7 +26,7 @@
 
             <v-list>
               <v-list-item
-                  v-for="booking in todaysBookings"
+                  v-for="booking in myBookingsOfTheDay"
                   :key="booking.id"
                   @click="openShowBookingDialog(booking)"
               >
@@ -57,14 +57,14 @@
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </v-card-title>
-            <v-card-text v-if="upcomingBookings.length <= 0">
+            <v-card-text v-if="myUpcomingBookings.length <= 0">
               <v-alert>
                 You have no upcoming desk bookings.
               </v-alert>
             </v-card-text>
             <BookingsTable
                 v-else
-                :bookings="upcomingBookings"
+                :bookings="myUpcomingBookings"
                 @editBooking="(booking) => openEditeBookingDialog(booking)"
                 @openBooking="(booking) => openShowBookingDialog(booking)"
             ></BookingsTable>
@@ -112,14 +112,14 @@ export default defineComponent({
   computed: {
     ...mapState('bookings', ['loading', "bookingsFetched"]),
     ...mapState('defaults', ['bookingDefaultsLoading', 'bookingDefaultsFetched']),
-    ...mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
+    ...mapGetters('bookings', ['myUpcomingBookings', 'myBookingsOfTheDay']),
   },
   mounted() {
-    this.fetchBookings()
+    this.fetchMyBookings()
     this.fetchBookingDefaults()
   },
   methods: {
-    ...mapActions("bookings", ["fetchBookings"]),
+    ...mapActions("bookings", ["fetchMyBookings"]),
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     openCreateBookingDialog() {
       this.showBookingFormDialog = true
@@ -137,7 +137,7 @@ export default defineComponent({
       this.bookingToShow = booking
     },
     hasBookingsForToday() {
-      return this.todaysBookings.length > 0
+      return this.myBookingsOfTheDay.length > 0
     }
   }
 

@@ -16,14 +16,14 @@
     </v-card-item>
     <v-card-actions>
       <v-btn variant="text" @click="booksForToday">
-        Book desk
+        book now
       </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 <script lang="ts">
 import {defineComponent} from "vue";
-import {mapActions, mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import moment from "moment/moment";
 import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
@@ -38,19 +38,26 @@ export default defineComponent({
     overlappingBookings: null
   }),
   computed: {
-    ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"])
+    ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"]),
+    ...mapGetters("bookings", ["getBookingsByRoomAndDay"]),
+    ...mapState("bookings", ["bookings"])
   },
   mounted() {
-    this.loadAndCheck()
     this.fetchBookingDefaults()
+    this.fetchBookings()
   },
   watch: {
-    bookingDefaults() {
+    async bookingDefaults() {
+      await this.fetchBookings()
+      await this.loadAndCheck()
+    },
+    bookings() {
       this.loadAndCheck()
     }
   },
   methods: {
     ...mapActions("defaults", ["fetchBookingDefaults"]),
+    ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
 
     booksForToday: function () {
       const startDefault = moment(this.bookingDefaults.start);
@@ -73,20 +80,17 @@ export default defineComponent({
       return now.add(min, "minutes")
     },
 
+    async fetchBookings() {
+      if (this.bookingDefaults && this.bookingDefaults.room) {
+        await this.fetchBookingsByRoomAndDate({roomId: this.bookingDefaults.room.id, date: moment.now()})
+      }
+    },
     async loadAndCheck() {
 
-      if (!this.bookingDefaults) {
-        return
-      }
-      console.log("load bookings for room and day")
-      const res = await fetch(`/api/v1.0/rooms/${this.bookingDefaults.room?.id}/bookings?date=${moment().format('YYYY-MM-DD')}`)
-      if (res.status >= 400) {
-        return
-      }
-      const bookings = await res.json()
+      if (this.bookingDefaults?.room?.id) {
 
-
-      this.checkOverlaps(bookings)
+        this.checkOverlaps(this.getBookingsByRoomAndDay(this.bookingDefaults.room.id, moment.now()))
+      }
     },
 
     checkOverlaps: function (bookings: Array<Booking>) {

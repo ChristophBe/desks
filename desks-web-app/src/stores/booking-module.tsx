@@ -6,43 +6,102 @@ import BookingUtils from "@/utils/booking-utils";
 import Room from "@/models/Room";
 import {notify} from "@/stores/notification-module";
 import {deleteData, getData, patchData, postData} from "@/utils/request-utils";
+import {MomentInput} from "moment/moment";
 
+interface RoomAndDate {
+    roomId: Room["id"]
+    date: MomentInput
+}
 
-export interface BookingsState {
-    loading: boolean
-    bookingsFetched: boolean
+interface SetBookingsPayload extends RoomAndDate {
     bookings: Array<Booking>
 }
 
+export interface BookingsState {
+    loadingMyBookings: boolean
+    myBookingsFetched: boolean
+    bookings: Array<Booking>
+    loadingByRoomAndDate: Map<string, boolean>
+}
+
 const state: BookingsState = {
-    loading: false,
-    bookingsFetched: true,
-    bookings: []
+    loadingMyBookings: false,
+    myBookingsFetched: true,
+    bookings: [],
+    loadingByRoomAndDate: new Map<string, boolean>()
+}
+
+function mergeBooking(bookings: Array<Booking>, bookingsToUpdate: Array<Booking>): Array<Booking> {
+    const idsOfUpdatedBookings = bookingsToUpdate ? bookingsToUpdate.map(booking => booking.id) : []
+    return [
+        ...bookings.filter(booking => !idsOfUpdatedBookings.includes(booking.id)),
+        ...bookingsToUpdate
+    ];
 }
 
 const mutations: MutationTree<BookingsState> = {
-    loading(state: BookingsState) {
-        state.loading = true
+    loadingMyBookings(state: BookingsState) {
+        state.loadingMyBookings = true
     },
-    setBookings(state: BookingsState, bookings: Array<Booking>) {
-        state.bookings = bookings
-        state.loading = false
-        state.bookingsFetched = true
+    setMyBookings(state: BookingsState, bookings: Array<Booking>) {
+        state.bookings = mergeBooking(state.bookings, bookings)
+        state.loadingMyBookings = false
+        state.myBookingsFetched = true
+    },
+    setBookings(state: BookingsState, {bookings, roomId, date}: SetBookingsPayload) {
+        state.bookings = mergeBooking(state.bookings, bookings)
+
+        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, false)
+
+    },
+    loadingForRoomAndDate(state: BookingsState, {roomId, date}: RoomAndDate) {
+        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, true)
+    },
+    removeBooking(state: BookingsState, idToRemove: Booking['id']) {
+        state.bookings = state.bookings.filter(booking => booking.id !== idToRemove)
     }
 }
+
 const getters: GetterTree<BookingsState, RootState> = {
-    upcomingBookings(state: BookingsState) {
-        return state.bookings.filter(booking => moment(booking.end).isAfter(moment.now()))
+
+    getBookingsByRoomAndDay(state: BookingsState) {
+        return (room: Room["id"], date: MomentInput) => {
+            return state.bookings
+                .filter(booking => booking.room.id === room)
+                .filter((booking: Booking) => moment(booking.start).isSame(date, 'days'))
+        }
     },
-    todaysBookings(state: BookingsState) {
-        return state.bookings.filter(booking => moment(booking.start).isSame(moment.now(), 'days'))
+    getByRoomAndDay(state: BookingsState) {
+        return (room: Room["id"], date: MomentInput) => {
+            return state.bookings
+                .filter(booking => booking.room.id === room)
+                .filter((booking: Booking) => moment(booking.start).isSame(date, 'days'))
+        }
     },
-    getOverlappingBookings(state: BookingsState) {
-        if (!state.bookingsFetched) {
+    isLoadingBookingsByRoomAndDay(state: BookingsState) {
+        return (roomId: Room["id"], date: MomentInput) => {
+            const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
+            return state.loadingByRoomAndDate.has(key) || state.loadingByRoomAndDate.get(key)
+        }
+    },
+    myBookings(state: BookingsState, _, rootState: RootState): Array<Booking> {
+        if (!rootState.user.user) {
+            return []
+        }
+        return state.bookings.filter(booking => booking.user.id === rootState.user.user?.id)
+    },
+    myUpcomingBookings(state: BookingsState, getters) {
+        return getters.myBookings.filter((booking: Booking) => moment(booking.end).isAfter(moment.now()))
+    },
+    myBookingsOfTheDay(state: BookingsState, getters) {
+        return getters.myBookings.filter((booking: Booking) => moment(booking.start).isSame(moment.now(), 'days'))
+    },
+    getMyOverlappingBookings(state: BookingsState, getters) {
+        if (!state.myBookingsFetched) {
             throw "bookings were not fetched"
         }
         return (room: Room, start: Moment, end: Moment, skipBookingIds: number[] = []) => {
-            return room ? BookingUtils.findOverlaps(state.bookings, start, end)
+            return room ? BookingUtils.findOverlaps(getters.myBookings, start, end)
                 .filter(booking => !skipBookingIds.includes(booking.id))
                 .filter(booking => booking.room.id === room.id) : false;
         }
@@ -50,8 +109,8 @@ const getters: GetterTree<BookingsState, RootState> = {
 }
 const actions: ActionTree<BookingsState, RootState> = {
 
-    async fetchBookings({commit, rootState}: ActionContext<BookingsState, RootState>) {
-        commit('loading')
+    async fetchMyBookings({commit, rootState}: ActionContext<BookingsState, RootState>) {
+        commit('loadingMyBookings')
         if (!rootState.user.user) {
             return
         }
@@ -62,13 +121,37 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
         try {
             const bookings = await response.json()
-            commit('setBookings', bookings)
+            commit('setMyBookings', bookings)
         } catch (e) {
             console.log("Failed to fetch bookings", e)
         }
 
     },
-    async deleteBooking({dispatch, state, rootState}: ActionContext<BookingsState, RootState>, booking: Booking) {
+    async fetchBookingsByRoomAndDate({commit}: ActionContext<BookingsState, RootState>, {roomId, date}: RoomAndDate) {
+        console.log("load bookings for room and day")
+        if (!roomId || !date) {
+            return
+        }
+        const dateString = moment(date).format('YYYY-MM-DD')
+        const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?date=${dateString}`)
+        if (res.status >= 400) {
+            console.log(`Failed to fetch bookings for room ${roomId} on ${dateString} `)
+            return
+        }
+        try {
+            const bookings: Array<Booking> = await res.json()
+            commit("setBookings", {bookings: bookings, roomId: roomId, date: date})
+        } catch (e) {
+            console.log(`Failed to fetch bookings for room ${roomId} on ${dateString} `, e)
+        }
+    },
+
+    async deleteBooking({
+                            commit,
+                            dispatch,
+                            state,
+                            rootState
+                        }: ActionContext<BookingsState, RootState>, booking: Booking) {
 
         console.log("Booking to delete", booking)
         if (!rootState.user.user) {
@@ -84,7 +167,7 @@ const actions: ActionTree<BookingsState, RootState> = {
             await notify(dispatch, "Failed to delete the booking.", "error")
             return
         }
-        await dispatch("fetchBookings")
+        await commit("removeBooking", booking.id)
         await notify(dispatch, "Deleted the booking.")
     },
     saveBooking: async function ({
@@ -109,7 +192,7 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
         try {
             await response.json()
-            await dispatch("fetchBookings")
+            await dispatch("fetchMyBookings")
         } catch (e) {
             await notify(dispatch, "Failed to save the booking.", "error")
             console.log("Failed to create booking", e)

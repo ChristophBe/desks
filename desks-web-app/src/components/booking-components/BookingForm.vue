@@ -148,7 +148,7 @@ export default defineComponent({
   computed: {
     ...mapState('rooms', {rooms: 'rooms'}),
     ...mapState('configuration', {configuration: 'configuration'}),
-    ...mapGetters('bookings', {getOverlaps: 'getOverlappingBookings'})
+    ...mapGetters('bookings', {getOverlaps: 'getMyOverlappingBookings'})
   },
 
   methods: {
@@ -180,7 +180,7 @@ export default defineComponent({
       return moment(v).isSameOrAfter(moment.now(), "days")
     },
     dateMaxValidationRule(v: string) {
-      return moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days")
+      return this.configuration ? moment(v).isSameOrBefore(moment(this.configuration.maximalBookingDate), "days") : false
     },
     validate() {
       const form = this.$refs.form as HTMLFormElement
