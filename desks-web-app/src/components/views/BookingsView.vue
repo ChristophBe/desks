@@ -5,96 +5,122 @@
   >
     <BookingFormDialogue @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingFormDialogue>
   </v-dialog>
-
   <v-dialog
       v-model="showBookingDialog"
   >
-    <booking-details @close="showBookingDialog = false" :booking="bookingToShow" @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
+    <booking-details @close="showBookingDialog = false" :booking="bookingToShow"
+                     @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
   </v-dialog>
-  <v-card v-if="todaysBookings.length > 0" class="mb-3">
-    <v-card-title>Today</v-card-title>
+  <v-fade-transition>
 
-    <v-expansion-panels>
-      <v-expansion-panel v-for="booking in todaysBookings" :key="booking.id">
-        <v-expansion-panel-title class="pl-4">
-          <span>{{ booking.room.name }}</span>
-          <v-spacer></v-spacer>
+    <loading v-if="(loading && !bookingsFetched) || (bookingDefaultsLoading && !bookingDefaultsFetched)"></loading>
+    <v-container v-else>
 
-          <span class="mr-4">
-            {{ $format.timeRange(booking.start, booking.end) }}
-          </span>
+      <v-row class="mb-3">
+        <v-col :cols="hasBookingsForToday() ? 6 : 12" xm="12">
+          <desk-availabilty @book="openEditeBookingDialog"/>
+        </v-col>
+        <v-col cols="6" xm="12" v-if="hasBookingsForToday()">
+          <v-card>
+            <v-card-title>Today</v-card-title>
 
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
+            <v-list>
+              <v-list-item
+                  v-for="booking in myBookingsOfTheDay"
+                  :key="booking.id"
+                  @click="openShowBookingDialog(booking)"
+              >
+                <v-list-item-header>
+                  <v-list-item-title>{{ booking.room.name }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
+                </v-list-item-header>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-col>
 
-          <AlsoInTheRoom :room-id="booking.room.id" :date="booking.start"></AlsoInTheRoom>
-        </v-expansion-panel-text>
+      </v-row>
 
-      </v-expansion-panel>
-    </v-expansion-panels>
-  </v-card>
-  <v-card>
-    <v-card-title class="d-flex">
+      <v-row>
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex">
+              <div class="mr-auto">
+                My Desk Bookings
+              </div>
 
-      <div class="mr-auto">
-        My Desk Bookings
-      </div>
+              <v-btn
+                  icon
+                  elevation="0"
+                  @click="openCreateBookingDialog()"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-card-title>
+            <v-card-text v-if="myUpcomingBookings.length <= 0">
+              <v-alert>
+                You have no upcoming desk bookings.
+              </v-alert>
+            </v-card-text>
+            <BookingsTable
+                v-else
+                :bookings="myUpcomingBookings"
+                @editBooking="(booking) => openEditeBookingDialog(booking)"
+                @openBooking="(booking) => openShowBookingDialog(booking)"
+            ></BookingsTable>
+          </v-card>
+        </v-col>
+      </v-row>
 
-      <v-btn
-          icon
-          elevation="0"
-          @click="openCreateBookingDialog()"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-card-title>
 
-    <v-alert v-if="upcomingBookings.length  <= 0">
-      You have currently no upcoming desk bookings.
-    </v-alert>
+    </v-container>
+  </v-fade-transition>
 
-    <BookingsTable
-        v-else
-        :bookings="upcomingBookings"
-        @editBooking="(booking) => openEditeBookingDialog(booking)"
-        @openBooking="(booking) => openShowBookingDialog(booking)"
-    ></BookingsTable>
-  </v-card>
+
 </template>
 
 <script lang="ts">
 
 import {defineComponent} from "vue";
-import {mapActions, mapGetters} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import BookingsTable from "@/components/booking-components/BookingsTable.vue";
-import AlsoInTheRoom from "@/components/booking-components/AlsoInTheRoom.vue";
 import Booking from "@/models/Booking";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
+import DeskAvailabilty from "@/components/booking-components/DeskAvailabilityCard.vue";
+import Loading from "@/components/Loading.vue";
 
 
-interface bookingViewData{
-  showBookingFormDialog:boolean
-  bookingToEdit:Booking|null
-  showBookingDialog:boolean
-  bookingToShow:Booking|null
+interface bookingViewData {
+  showBookingFormDialog: boolean
+  bookingToEdit: Booking | null
+  showBookingDialog: boolean
+  bookingToShow: Booking | null
+  show: boolean
 }
 
 export default defineComponent({
   name: "BookingsView",
-  components: {BookingFormDialogue, BookingDetails, AlsoInTheRoom, BookingsTable},
-  data: ():bookingViewData  => ({
+  components: {DeskAvailabilty, BookingFormDialogue, BookingDetails, BookingsTable, Loading},
+  data: (): bookingViewData => ({
     showBookingFormDialog: false,
     bookingToEdit: null,
-    showBookingDialog:false,
-    bookingToShow:null
+    showBookingDialog: false,
+    bookingToShow: null,
+    show: false
   }),
-  computed: mapGetters('bookings', ['upcomingBookings', 'todaysBookings']),
+  computed: {
+    ...mapState('bookings', ['loading', "bookingsFetched"]),
+    ...mapState('defaults', ['bookingDefaultsLoading', 'bookingDefaultsFetched']),
+    ...mapGetters('bookings', ['myUpcomingBookings', 'myBookingsOfTheDay']),
+  },
   mounted() {
-    this.fetchBookings()
+    this.fetchMyBookings()
+    this.fetchBookingDefaults()
   },
   methods: {
-    ...mapActions("bookings", ["fetchBookings"]),
+    ...mapActions("bookings", ["fetchMyBookings"]),
+    ...mapActions("defaults", ["fetchBookingDefaults"]),
     openCreateBookingDialog() {
       this.showBookingFormDialog = true
       this.showBookingDialog = false
@@ -105,10 +131,13 @@ export default defineComponent({
       this.showBookingDialog = false
       this.bookingToEdit = booking
     },
-    openShowBookingDialog(booking:Booking){
+    openShowBookingDialog(booking: Booking) {
       this.showBookingFormDialog = false
       this.showBookingDialog = true
       this.bookingToShow = booking
+    },
+    hasBookingsForToday() {
+      return this.myBookingsOfTheDay.length > 0
     }
   }
 
@@ -116,6 +145,3 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
-
-</style>

@@ -5,16 +5,17 @@
     <v-card-title class="d-flex">
       <div class="mr-auto my-auto">Booking Details</div>
       <v-btn icon elevation="0">
-      <v-icon>mdi-dots-vertical</v-icon>
-      <booking-context-menu activator="parent" :booking="booking" @edit="$emit('edit')" @deleted="$emit('close')"></booking-context-menu>
-    </v-btn>
+        <v-icon>mdi-dots-vertical</v-icon>
+        <booking-context-menu activator="parent" :booking="booking" @edit="$emit('edit')"
+                              @deleted="$emit('close')"></booking-context-menu>
+      </v-btn>
     </v-card-title>
     <v-list>
       <v-list-item>
         <v-list-item-avatar start icon="mdi-calendar"></v-list-item-avatar>
         <v-list-item-header>
-          <v-list-item-title>{{$format.date(booking.start)}}</v-list-item-title>
-          <v-list-item-subtitle>{{$format.timeRange(booking.start, booking.end)}}</v-list-item-subtitle>
+          <v-list-item-title>{{ $format.date(booking.start) }}</v-list-item-title>
+          <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
         </v-list-item-header>
 
       </v-list-item>
@@ -22,7 +23,7 @@
         <v-list-item-avatar start icon="mdi-map-marker"></v-list-item-avatar>
         <v-list-item-header>
 
-          <v-list-item-title>{{booking.room.name}}</v-list-item-title>
+          <v-list-item-title>{{ booking.room.name }}</v-list-item-title>
         </v-list-item-header>
       </v-list-item>
     </v-list>
@@ -30,7 +31,7 @@
     <v-card-title class="mt-4">
       Colleagues
     </v-card-title>
-    <also-in-the-room :date="booking.start" :room-id="booking.room.id"></also-in-the-room>
+    <also-in-the-room v-if="booking" :date="booking.start" :room-id="booking.room.id"></also-in-the-room>
     <v-card-actions>
       <v-btn @click="$emit('close')">
         Close
@@ -56,7 +57,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-  .card{
-    min-width: 400px;
-  }
+.card {
+  min-width: 400px;
+}
 </style>

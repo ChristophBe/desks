@@ -20,7 +20,7 @@
     <tbody>
 
     <tr
-        v-for="item in bookings"
+        v-for="item in [...bookings].sort(compareBookingsByTime)"
         :key="item.id"
         @click="$emit('openBooking', item)"
     >
@@ -46,6 +46,7 @@
 import {defineComponent} from "vue";
 import Booking from "@/models/Booking";
 import BookingContextMenu from "@/components/booking-components/BookingContextMenu.vue";
+import moment from "moment/moment";
 
 export default defineComponent({
   name: "BookingsTable",
@@ -59,6 +60,9 @@ export default defineComponent({
       this.$emit("editBooking", booking)
     },
 
+    compareBookingsByTime(a: Booking, b: Booking): number {
+      return moment(a.start).diff(moment(b.start))
+    }
   }
 
 })

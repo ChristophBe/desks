@@ -1,12 +1,15 @@
 <template>
-  <v-alert v-if="room"
-           density="comfortable"
-           :type="calculateType(overlappingBookings,room.capacity)"
-           variant="text"
-           class="mb-2"
-  >
-    <div>{{ overlappingBookings }} / {{ room.capacity }} desks booked</div>
-  </v-alert>
+  <v-expand-transition>
+    <v-alert v-if="room && date"
+             density="comfortable"
+             :type="calculateType(overlappingBookings,room.capacity)"
+             variant="text"
+             class="mb-2"
+    >
+      <div>{{ overlappingBookings }} / {{ room.capacity }} desks booked</div>
+    </v-alert>
+  </v-expand-transition>
+
 </template>
 
 
@@ -14,7 +17,7 @@
 
 import {defineComponent} from "vue";
 import moment from "moment";
-import {mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import Booking from "@/models/Booking";
 import BookingUtils from "@/utils/booking-utils";
 
@@ -60,18 +63,20 @@ export default defineComponent({
     }
   },
 
-  computed: mapState('user', ['user']),
+  computed: {
+    ...mapState('user', ['user']),
+    ...mapGetters('bookings', ['getBookingsByRoomAndDay'])
+  },
 
   methods: {
-
+    ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
     async loadAndCheck() {
-      console.log("load bookings for room and day")
-      const res = await fetch(`/api/v1.0/rooms/${this.room?.id}/bookings?date=${moment(this.date).format('YYYY-MM-DD')}`)
-      if (res.status >= 400) {
+
+      if (!this.room || !this.date) {
         return
       }
-      this.bookings = await res.json()
-
+      await this.fetchBookingsByRoomAndDate({roomId: this.room.id, date: this.date})
+      this.bookings = this.getBookingsByRoomAndDay(this.room.id, this.date)
 
       this.checkOverlaps()
     },

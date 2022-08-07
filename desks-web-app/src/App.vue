@@ -9,21 +9,19 @@
           size="48"
       >
         {{
-            user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
+          user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
         }}
       </v-avatar>
     </v-app-bar>
     <v-main>
 
+      <v-fade-transition>
+        <app-loading v-if="!user || loading" text="Authenticating"></app-loading>
 
-      <v-container>
-        <Login v-if="!user && !loading"/>
 
-        <v-card v-else-if="loading">
-          <v-card-title>Wait for it</v-card-title>
-        </v-card>
         <BookingsView v-else></BookingsView>
-      </v-container>
+      </v-fade-transition>
+
 
       <app-notifications></app-notifications>
     </v-main>
@@ -39,9 +37,11 @@ import Bookings from "./components/views/BookingsView.vue";
 import BookingsView from "@/components/views/BookingsView.vue";
 import Notifications from "@/components/Notifications.vue";
 import AppNotifications from "@/components/Notifications.vue";
+import AppLoading from "@/components/Loading.vue";
 
 @Options({
   components: {
+    AppLoading,
     AppNotifications,
     Notifications,
     BookingsView,
