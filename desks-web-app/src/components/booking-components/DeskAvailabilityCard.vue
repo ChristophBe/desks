@@ -64,7 +64,7 @@ export default defineComponent({
       let start = moment().startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")
       start = start.isBefore(moment.now()) ? this.roundToNextFiveMinutes() : start
 
-      const endDefault = moment(this.bookingDefaults.start);
+      const endDefault = moment(this.bookingDefaults.end);
       let end = moment().startOf("day").add(endDefault.hour(), "hour").add(endDefault.minutes(), "minute")
       end = end.isSameOrAfter(moment.now()) && end.isSameOrAfter(start) ? end : moment(start).add(1, "hour")
       const booking: Partial<Booking> = {
