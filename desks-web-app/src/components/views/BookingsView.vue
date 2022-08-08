@@ -17,10 +17,10 @@
     <v-container v-else>
 
       <v-row class="mb-3">
-        <v-col :cols="hasBookingsForToday() ? 6 : 12" xm="12">
+        <v-col :md="hasBookingsForToday() ? 6 : 12" cols="12">
           <desk-availabilty @book="openEditeBookingDialog"/>
         </v-col>
-        <v-col cols="6" xm="12" v-if="hasBookingsForToday()">
+        <v-col cols="12" md="6" v-if="hasBookingsForToday()">
           <v-card>
             <v-card-title>Today</v-card-title>
 

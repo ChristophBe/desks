@@ -81,7 +81,7 @@ const getters: GetterTree<BookingsState, RootState> = {
     isLoadingBookingsByRoomAndDay(state: BookingsState) {
         return (roomId: Room["id"], date: MomentInput) => {
             const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
-            return state.loadingByRoomAndDate.has(key) || state.loadingByRoomAndDate.get(key)
+            return state.loadingByRoomAndDate.has(key) && state.loadingByRoomAndDate.get(key)
         }
     },
     myBookings(state: BookingsState, _, rootState: RootState): Array<Booking> {
@@ -127,11 +127,12 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
 
     },
-    async fetchBookingsByRoomAndDate({commit}: ActionContext<BookingsState, RootState>, {roomId, date}: RoomAndDate) {
+    async fetchBookingsByRoomAndDate({commit, getters}: ActionContext<BookingsState, RootState>, {roomId, date}: RoomAndDate) {
         console.log("load bookings for room and day")
-        if (!roomId || !date) {
+        if (!roomId || !date || getters.isLoadingBookingsByRoomAndDay(roomId,date)) {
             return
         }
+        commit("loadingForRoomAndDate", {roomId:roomId, date:date})
         const dateString = moment(date).format('YYYY-MM-DD')
         const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?date=${dateString}`)
         if (res.status >= 400) {
