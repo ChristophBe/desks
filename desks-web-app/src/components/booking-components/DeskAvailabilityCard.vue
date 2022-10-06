@@ -62,7 +62,7 @@ export default defineComponent({
     booksForToday: function () {
       const startDefault = moment(this.bookingDefaults.start);
       let start = moment().startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")
-      start = start.isBefore(moment.now()) ? this.roundToNextFiveMinutes() : start
+      start = start.isBefore(moment.now()) ? BookingUtils.roundToNextFiveMinutes() : start
 
       const endDefault = moment(this.bookingDefaults.end);
       let end = moment().startOf("day").add(endDefault.hour(), "hour").add(endDefault.minutes(), "minute")
@@ -73,11 +73,6 @@ export default defineComponent({
         end: end.toDate()
       }
       this.$emit("book", booking)
-    },
-    roundToNextFiveMinutes() {
-      let now = moment().startOf("hour")
-      let min = (5 * Math.floor(moment().diff(now, "minute") / 5)) + 5
-      return now.add(min, "minutes")
     },
 
     async fetchBookings() {

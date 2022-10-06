@@ -33,7 +33,9 @@
                 <v-list-item-header>
                   <v-list-item-title>{{ booking.room.name }}</v-list-item-title>
                   <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
+
                 </v-list-item-header>
+                <v-list-item-action v-if="isOngoing(booking)"><v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text" >leave now</v-btn></v-list-item-action>
               </v-list-item>
             </v-list>
           </v-card>
@@ -89,6 +91,8 @@ import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
 import DeskAvailabilty from "@/components/booking-components/DeskAvailabilityCard.vue";
 import Loading from "@/components/Loading.vue";
+import moment from "moment";
+import BookingUtils from "@/utils/booking-utils";
 
 
 interface bookingViewData {
@@ -119,7 +123,7 @@ export default defineComponent({
     this.fetchBookingDefaults()
   },
   methods: {
-    ...mapActions("bookings", ["fetchMyBookings"]),
+    ...mapActions("bookings", ["fetchMyBookings","leaveEarly"]),
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     openCreateBookingDialog() {
       this.showBookingFormDialog = true
@@ -136,9 +140,17 @@ export default defineComponent({
       this.showBookingDialog = true
       this.bookingToShow = booking
     },
+    onLeaveEarly(booking: Partial<Booking>) {
+
+      this.leaveEarly(booking)
+    },
     hasBookingsForToday() {
       return this.myBookingsOfTheDay.length > 0
-    }
+    },
+    isOngoing(booking: Booking){
+      return moment(booking.start).isSameOrBefore(moment.now()) && moment(booking.end).isSameOrAfter(moment.now())
+      && !BookingUtils.roundToNextMinute().isSame(booking.end)
+    },
   }
 
 })

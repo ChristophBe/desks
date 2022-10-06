@@ -23,6 +23,7 @@
             :items="rooms"
             item-title="name"
             item-value="id"
+            :disabled="isOngoing"
             :rules="[() => !!room || 'This field is required']"
             @update:modelValue="validate"
             required
@@ -34,6 +35,7 @@
             v-model="date"
             label="Date"
             type="date"
+            :disabled="isOngoing"
             :rules="[
                 () => !!date || 'This field is required',
                 (v) => dateMinValidationRule(v) || 'The date can not be in the past',
@@ -46,6 +48,7 @@
             v-model="start"
             label="Start"
             type="time"
+            :disabled="isOngoing"
             :rules="[
                 () => !!start || 'This field is required',
                 () => startValidationRule() || 'The start time should be in the future'
@@ -125,7 +128,8 @@ export default defineComponent({
     room: null,
     start: '09:00',
     end: '17:00',
-    hasOwnOverlaps: false
+    hasOwnOverlaps: false,
+    isOngoing: false
   }),
 
   mounted() {
@@ -139,6 +143,7 @@ export default defineComponent({
       this.start = moment(this.booking.start).format("HH:mm");
       this.end = moment(this.booking.end).format("HH:mm");
 
+      this.isOngoing = moment(this.booking.start).isBefore(moment.now())
     } else {
       this.setDefaults()
 
@@ -174,7 +179,7 @@ export default defineComponent({
       return end.isAfter(start)
     },
     startValidationRule() {
-      return this.getStartDate().isAfter(moment.now());
+      return this.isOngoing ||   this.getStartDate().isAfter(moment.now());
     },
     dateMinValidationRule(v: string) {
       return moment(v).isSameOrAfter(moment.now(), "days")

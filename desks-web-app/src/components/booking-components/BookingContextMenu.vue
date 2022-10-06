@@ -1,7 +1,7 @@
 <template>
   <v-menu :activator="activator">
     <v-list density="compact">
-      <v-list-item class="align-center" @click="onEdite()" :disabled="isCurrentOrPastBooking()">
+      <v-list-item class="align-center" @click="onEdite()" :disabled="isAllowedToEdit()">
         <v-list-item-avatar start icon="mdi-pencil"></v-list-item-avatar>
         <v-list-item-title>Edit</v-list-item-title>
       </v-list-item>
@@ -39,6 +39,9 @@ export default defineComponent({
     },
     isCurrentOrPastBooking(): boolean {
       return moment(this.booking?.start).isBefore(moment.now())
+    },
+    isAllowedToEdit(): boolean {
+      return moment(this.booking?.end).isBefore(moment.now())
     }
   }
 });

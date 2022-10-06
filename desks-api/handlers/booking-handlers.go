@@ -80,16 +80,32 @@ func PatchBooking(user models.User, writer http.ResponseWriter, request *http.Re
 	body, err := readBookingFromRequest(request)
 	if err != nil {
 		util.ErrorResponseWriter(err, writer, request)
+		return
 	}
 
+	if booking.End.Before(time.Now()) {
+		err := util.BadRequest(fmt.Errorf("not allowed to modifiy past bookings"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
 	modifiedBooking := booking.Patch(body)
+
+	if booking.Start.Before(time.Now()) && (!booking.Start.Equal(modifiedBooking.Start) || booking.RoomId != modifiedBooking.RoomId) {
+		err := util.BadRequest(fmt.Errorf("not allowed to modifiy room or start for ongoing bookings"))
+		util.ErrorResponseWriter(err, writer, request)
+		return
+	}
 
 	if err = validateBooking(ctx, user, modifiedBooking); err != nil {
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
 
-	storedBooking, err := bookingRepository.Save(ctx, body)
+	storedBooking, err := bookingRepository.Save(ctx, modifiedBooking)
+	if err != nil {
+		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
+		return
+	}
 
 	if err = util.JsonResponseWriter(storedBooking, http.StatusAccepted, writer, request); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
@@ -97,32 +113,36 @@ func PatchBooking(user models.User, writer http.ResponseWriter, request *http.Re
 
 }
 
-func validateBooking(ctx context.Context, user models.User, body models.Booking) error {
+func validateChangesForOngoingBookings(originalBooking models.Booking, changes models.Booking) bool {
+	return !changes.Start.IsZero() || originalBooking.Start.Equal(changes.Start)
+}
+
+func validateBooking(ctx context.Context, user models.User, booking models.Booking) error {
 
 	roomRepository := data.NewRoomRepository()
 	bookingRepository := data.NewBookingRepository()
-	if body.User.Id != user.Id {
+	if booking.User.Id != user.Id {
 		return util.Forbidden(fmt.Errorf("not able to create a booking for another user"))
 	}
 
-	if !body.Start.Before(body.End) {
+	if !booking.Start.Before(booking.End) {
 		return util.BadRequest(fmt.Errorf("start should before end"))
 
 	}
 
 	maxBookingDate := services.NewFrontendConfigurationService().GetFrontendConfiguration().MaximalBookingDate
 
-	if !body.End.Before(maxBookingDate) {
+	if !booking.End.Before(maxBookingDate) {
 		return util.BadRequest(fmt.Errorf("the booking should be befor %v", maxBookingDate))
 
 	}
 
-	if room, err := roomRepository.FindById(ctx, body.Room.Id); err != nil || room.Id == 0 {
+	if room, err := roomRepository.FindById(ctx, booking.Room.Id); err != nil || room.Id == 0 {
 		return util.BadRequest(err)
 
 	}
 
-	if existsOverlap, err := bookingRepository.ExistsOverlappingBooking(ctx, body); existsOverlap || err != nil {
+	if existsOverlap, err := bookingRepository.ExistsOverlappingBooking(ctx, booking); existsOverlap || err != nil {
 		if err != nil {
 			return util.InternalServerError(err)
 		} else {

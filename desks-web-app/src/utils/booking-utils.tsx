@@ -14,4 +14,17 @@ export default class BookingUtils {
                 || end.isBetween(bookingStart, bookingEnd)
         })
     }
+
+    static roundToNextFiveMinutes(): moment.Moment{
+        return this.roundToNextMinutes(5)
+    }
+    static roundToNextMinutes(nMinutes: number): moment.Moment{
+        const now = moment().startOf("hour")
+        const min = (nMinutes * Math.floor(moment().diff(now, "minute") / nMinutes)) + nMinutes
+        return now.add(min, "minutes")
+    }
+    static roundToNextMinute(): moment.Moment{
+       return this.roundToNextMinutes(1)
+    }
+
 }
