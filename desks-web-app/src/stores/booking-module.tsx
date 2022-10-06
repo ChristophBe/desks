@@ -199,6 +199,13 @@ const actions: ActionTree<BookingsState, RootState> = {
             console.log("Failed to create booking", e)
         }
         await notify(dispatch, "Saved the booking.")
+    },
+    leaveEarly: async function ({dispatch}:  ActionContext<BookingsState, RootState>, booking: Partial<Booking>){
+        const updateBooking: Partial<Booking> = {
+            id: booking.id,
+            end: BookingUtils.roundToNextMinute().toDate()
+        }
+        await dispatch("saveBooking",updateBooking)
     }
 }
 export const bookingsModule: Module<BookingsState, RootState> = {

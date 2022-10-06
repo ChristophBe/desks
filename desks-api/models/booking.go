@@ -16,8 +16,9 @@ type Booking struct {
 }
 
 func (b Booking) Patch(other Booking) Booking {
-	if !reflect.ValueOf(other.Room).IsZero() {
+	if !reflect.ValueOf(other.Room.Id).IsZero() {
 		b.Room = other.Room
+		b.RoomId = other.Room.Id
 	}
 	if !reflect.ValueOf(other.Start).IsZero() {
 		b.Start = other.Start
@@ -26,5 +27,4 @@ func (b Booking) Patch(other Booking) Booking {
 		b.End = other.End
 	}
 	return b
-
 }
