@@ -20,7 +20,7 @@
         <v-col :md="hasBookingsForToday() ? 6 : 12" cols="12">
           <desk-availabilty @book="openEditeBookingDialog"/>
         </v-col>
-        <v-col cols="12" md="6" v-if="hasBookingsForToday()">
+        <v-col cols="12" md="6" v-if="hasBookingsForToday()" v-bind:id="today">
           <v-card>
             <v-card-title>Today</v-card-title>
 
@@ -80,6 +80,12 @@
 
 
 </template>
+
+<style scoped>
+  #todayCard v-card {
+    height: 100%;
+  }
+</style>
 
 <script lang="ts">
 
