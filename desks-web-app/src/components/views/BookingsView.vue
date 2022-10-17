@@ -85,6 +85,11 @@
   #todayCard v-card {
     height: 100%;
   }
+  
+  .v-card button.v-btn.v-theme--dark {
+    border: 1px solid rgba(255,255,255, 0.06);
+    padding: 0.5em 1.25em;
+  }
 </style>
 
 <script lang="ts">
