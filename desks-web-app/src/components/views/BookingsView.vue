@@ -35,7 +35,7 @@
                   <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
 
                 </v-list-item-header>
-                <v-list-item-action v-if="isOngoing(booking)"><v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text" >leave now</v-btn></v-list-item-action>
+                <v-list-item-action v-if="isOngoing(booking)"><v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="outlined" >leave now</v-btn></v-list-item-action>
               </v-list-item>
             </v-list>
           </v-card>
