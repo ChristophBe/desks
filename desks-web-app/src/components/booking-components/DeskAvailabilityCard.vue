@@ -8,7 +8,7 @@
         </div>
         <v-fade-transition>
           <v-chip v-if="overlappingBookings !== null" :color="calculateType()">{{ overlappingBookings }} /
-            {{ bookingDefaults.room.capacity }} desks booked today
+            {{ bookingDefaults.room.capacity }} <span class="hidden-xs">desks booked today</span>
           </v-chip>
         </v-fade-transition>
 
