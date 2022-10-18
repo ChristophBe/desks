@@ -94,7 +94,7 @@
     border: 1px solid rgba(255,255,255, 0.06);
   }
   
-  .v-card button {
+  .v-card button.v-btn {
     padding: 0.5em 1.25em;
   }
 </style>
