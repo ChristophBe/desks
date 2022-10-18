@@ -41,6 +41,10 @@
 .v-button.v-btn--variant-outlined.v-theme--dark {
   border: thin solid rgba(255,255,255,.12);
 }
+
+.card {
+    min-width: min(400px, calc(100vw - 48px)) !important;
+}
 </style>
 
 <script lang="ts">
