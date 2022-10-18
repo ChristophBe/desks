@@ -85,13 +85,13 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn variant="outlined"
+        <v-btn
             :disabled="!valid || hasOwnOverlaps"
             @click="submit"
         >
           {{ booking && booking.id ? "Save" : "Book" }}
         </v-btn>
-        <v-btn variant="outlined"
+        <v-btn
             @click="$emit('close')"
         >
           Cancel
