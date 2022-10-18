@@ -29,6 +29,20 @@
   </v-app>
 </template>
 
+<style global>
+.v-card-actions {
+  justify-content: flex-end;
+}
+
+.v-button.v-btn--variant-outlined.v-theme--light {
+  border: thin solid rgba(0,0,0,.12);
+}
+
+.v-button.v-btn--variant-outlined.v-theme--dark {
+  border: thin solid rgba(255,255,255,.12);
+}
+</style>
+
 <script lang="ts">
 import {Options, Vue} from 'vue-class-component';
 import Login from './components/views/LoginView.vue';
