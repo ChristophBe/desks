@@ -15,7 +15,7 @@
       </div>
     </v-card-item>
     <v-card-actions>
-      <v-btn variant="text" @click="booksForToday">
+      <v-btn variant="outined" @click="booksForToday">
         book now
       </v-btn>
     </v-card-actions>
