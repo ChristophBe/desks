@@ -30,6 +30,10 @@
 
     <v-card-title class="mt-4">
       Colleagues
+      <v-fade-transition>
+        <v-progress-circular v-if=" isLoadingBookingsByRoomAndDay(roomId, date)" class=" mr-4" indeterminate size="small"></v-progress-circular>
+
+      </v-fade-transition>
     </v-card-title>
     <also-in-the-room v-if="booking" :date="booking.start" :room-id="booking.room.id"></also-in-the-room>
     <v-card-actions>
@@ -44,6 +48,7 @@
 import {defineComponent} from "vue";
 import AlsoInTheRoom from "@/components/booking-components/AlsoInTheRoom.vue";
 import BookingContextMenu from "@/components/booking-components/BookingContextMenu.vue";
+import {mapGetters} from "vuex";
 
 export default defineComponent({
   name: "booking-details",
@@ -52,6 +57,9 @@ export default defineComponent({
     booking: {
       type: Object
     }
+  },
+  computed:{
+    ...mapGetters('bookings', ['isLoadingBookingsByRoomAndDay'])
   }
 });
 </script>
