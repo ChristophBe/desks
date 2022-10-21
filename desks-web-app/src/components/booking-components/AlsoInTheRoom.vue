@@ -8,22 +8,7 @@
       office.
     </v-alert>
 
-    <v-list v-else>
-      <v-list-item two-line v-for="booking in bookingsOfColleagues.sort(compareByName)" :key="booking.id">
-        <v-list-item-avatar start>
-          <v-avatar color="primary">
-            {{ booking.user.givenName.charAt(0) }}{{ booking.user.familyName.charAt(0) }}
-          </v-avatar>
-
-
-        </v-list-item-avatar>
-        <v-list-item-header>
-          <v-list-item-title>{{ booking.user.givenName }} {{ booking.user.familyName }}</v-list-item-title>
-          <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
-        </v-list-item-header>
-
-      </v-list-item>
-    </v-list>
+    <booking-list v-else :bookings="bookingsOfColleagues"></booking-list>
   </div>
 
 </template>
@@ -33,7 +18,8 @@
 import {defineComponent} from "vue";
 import Booking from "@/models/Booking";
 import {mapActions, mapGetters, mapState} from "vuex";
-import moment from "moment";
+
+import BookingList from "@/components/booking-components/BookingList.vue";
 
 interface alsoInTheRoomData {
   bookingsOfColleagues?: Array<Booking>
@@ -41,6 +27,7 @@ interface alsoInTheRoomData {
 
 export default defineComponent({
   name: "AlsoInTheRoom",
+  components: {BookingList},
   data: (): alsoInTheRoomData => ({
     bookingsOfColleagues: undefined,
   }),
@@ -63,10 +50,10 @@ export default defineComponent({
     ...mapGetters('bookings', ['getBookingsByRoomAndDay', 'isLoadingBookingsByRoomAndDay'])
   },
   watch: {
-    roomId(){
+    roomId() {
       this.fetchData()
     },
-    date(){
+    date() {
       this.fetchData()
     },
     bookings() {
@@ -83,19 +70,9 @@ export default defineComponent({
           .filter((booking: Booking) => booking.user.id !== this.user.id)
 
     },
-    compareByName(a: Booking, b: Booking): number {
-      let comparison = a.user.familyName.localeCompare(b.user.familyName)
-      if (comparison === 0) {
-        comparison = a.user.givenName.localeCompare(b.user.givenName)
-      }
-      if (comparison === 0) {
-        comparison = moment(a.start).diff(moment(b.start))
-      }
-      return comparison
-    },
-    fetchData(){
+    fetchData() {
       this.bookingsOfColleagues = undefined
-      if(this.roomId && this.date){
+      if (this.roomId && this.date) {
         this.fetchBookingsByRoomAndDate({roomId: this.roomId, date: this.date})
       }
       this.updateBookingsOfColleagues();
