@@ -1,6 +1,6 @@
 <template>
   <v-list>
-    <v-list-item two-line v-for="booking in bookingsSorted" :key="booking.id">
+    <v-list-item two-line v-for="booking in [...bookings].sort(compareByName)" :key="booking.id">
       <v-list-item-avatar start>
         <v-avatar color="primary">
           {{ booking.user.givenName.charAt(0) }}{{ booking.user.familyName.charAt(0) }}
@@ -21,29 +21,17 @@
 import {defineComponent} from "vue";
 import Booking from "@/models/Booking";
 import moment from "moment";
-import {th} from "@vuetify/nightly/locale";
 
-interface BookingListState {
-  bookingsSorted: Booking[]
-}
 
 export default defineComponent({
   name: "BookingList",
-  data: (): BookingListState => ({
-    bookingsSorted: []
-  }),
+
   props: {
     bookings: {
       type: Array
     }
   },
 
-  watch: {
-    bookings() {
-      this.bookingsSorted = this.bookings ? [...this.bookings].sort(this.compareByName) : [];
-
-    }
-  },
   methods: {
     compareByName(a: Booking, b: Booking): number {
       let comparison = a.user.familyName.localeCompare(b.user.familyName)

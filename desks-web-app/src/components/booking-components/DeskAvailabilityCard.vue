@@ -8,7 +8,6 @@
         </div>
         <div>
 
-          <v-fade-transition>
             <v-menu
                 open-on-hover
                 v-if="overlappingBookings !== null"
@@ -24,7 +23,6 @@
                 <booking-list v-if="bookingsOfColleagues.length>0" :bookings="bookingsOfColleagues"></booking-list>
               </v-card>
             </v-menu>
-          </v-fade-transition>
         </div>
       </div>
     </v-card-item>
@@ -103,9 +101,8 @@ export default defineComponent({
     async loadAndCheck() {
 
       if (this.bookingDefaults?.room?.id) {
-        const bookings = this.getBookingsByRoomAndDay(this.bookingDefaults.room.id, moment.now())
-        this.bookingsOfColleagues = [...bookings].filter((booking: Booking) => booking.user.id !== this.user.id)
-        this.checkOverlaps(bookings)
+
+        this.checkOverlaps(this.getBookingsByRoomAndDay(this.bookingDefaults.room.id, moment.now()))
       }
     },
 
@@ -114,6 +111,7 @@ export default defineComponent({
       const start = moment().startOf("day")
       const end = moment().endOf("day")
 
+      console.log("test", start, end)
       const overlaps = BookingUtils.findOverlaps(bookings, start, end)
       this.overlappingBookings = new Set(overlaps.map(booking => booking.user.id)).size
     },

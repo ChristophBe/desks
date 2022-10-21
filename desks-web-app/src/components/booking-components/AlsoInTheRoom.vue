@@ -1,15 +1,11 @@
 <template>
-  <div>
-    <div v-if="bookingsOfColleagues === undefined || isLoadingBookingsByRoomAndDay(roomId, date)">
-      <v-progress-circular class="mx-4 mr-4" indeterminate size="small"></v-progress-circular>
-      load bookings of your colleagues
-    </div>
-    <v-alert v-else-if="bookingsOfColleagues.length <= 0" class="mx-4">There are no other bookings for the same
+  <v-expand-transition>
+    <v-alert v-if=" bookingsOfColleagues  && bookingsOfColleagues.length <= 0" class="mx-4">There are no other bookings for the same
       office.
     </v-alert>
 
-    <booking-list v-else :bookings="bookingsOfColleagues"></booking-list>
-  </div>
+    <booking-list v-else-if="bookingsOfColleagues" :bookings="bookingsOfColleagues"></booking-list>
+  </v-expand-transition>
 
 </template>
 
