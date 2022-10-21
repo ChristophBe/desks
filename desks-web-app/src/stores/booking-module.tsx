@@ -65,7 +65,7 @@ const mutations: MutationTree<BookingsState> = {
 const getters: GetterTree<BookingsState, RootState> = {
 
     getBookingsByRoomAndDay(state: BookingsState) {
-        return (room: Room["id"], date: MomentInput) => {
+        return (room: Room["id"], date: MomentInput): Booking[] => {
             return state.bookings
                 .filter(booking => booking.room.id === room)
                 .filter((booking: Booking) => moment(booking.start).isSame(date, 'days'))
@@ -127,12 +127,15 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
 
     },
-    async fetchBookingsByRoomAndDate({commit, getters}: ActionContext<BookingsState, RootState>, {roomId, date}: RoomAndDate) {
+    async fetchBookingsByRoomAndDate({commit, getters}: ActionContext<BookingsState, RootState>, {
+        roomId,
+        date
+    }: RoomAndDate) {
         console.log("load bookings for room and day")
-        if (!roomId || !date || getters.isLoadingBookingsByRoomAndDay(roomId,date)) {
+        if (!roomId || !date || getters.isLoadingBookingsByRoomAndDay(roomId, date)) {
             return
         }
-        commit("loadingForRoomAndDate", {roomId:roomId, date:date})
+        commit("loadingForRoomAndDate", {roomId: roomId, date: date})
         const dateString = moment(date).format('YYYY-MM-DD')
         const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?date=${dateString}`)
         if (res.status >= 400) {
@@ -200,12 +203,12 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
         await notify(dispatch, "Saved the booking.")
     },
-    leaveEarly: async function ({dispatch}:  ActionContext<BookingsState, RootState>, booking: Partial<Booking>){
+    leaveEarly: async function ({dispatch}: ActionContext<BookingsState, RootState>, booking: Partial<Booking>) {
         const updateBooking: Partial<Booking> = {
             id: booking.id,
             end: BookingUtils.roundToNextMinute().toDate()
         }
-        await dispatch("saveBooking",updateBooking)
+        await dispatch("saveBooking", updateBooking)
     }
 }
 export const bookingsModule: Module<BookingsState, RootState> = {

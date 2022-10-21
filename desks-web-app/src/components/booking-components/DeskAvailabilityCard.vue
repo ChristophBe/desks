@@ -6,12 +6,26 @@
           <v-card-title>Desk Availability</v-card-title>
           <v-card-subtitle>{{ bookingDefaults.room.name }}</v-card-subtitle>
         </div>
-        <v-fade-transition>
-          <v-chip v-if="overlappingBookings !== null" :color="calculateType()">{{ overlappingBookings }} /
-            {{ bookingDefaults.room.capacity }} desks booked today
-          </v-chip>
-        </v-fade-transition>
+        <div>
 
+          <v-fade-transition>
+            <v-menu
+                open-on-hover
+                v-if="overlappingBookings !== null"
+            >
+              <template v-slot:activator="{ props }">
+                <v-chip v-bind="props" :color="calculateType()">{{
+                    overlappingBookings
+                  }} /
+                  {{ bookingDefaults.room.capacity }} desks booked today
+                </v-chip>
+              </template>
+              <v-card v-if="bookingsOfColleagues.length>0">
+                <booking-list v-if="bookingsOfColleagues.length>0" :bookings="bookingsOfColleagues"></booking-list>
+              </v-card>
+            </v-menu>
+          </v-fade-transition>
+        </div>
       </div>
     </v-card-item>
     <v-card-actions>
@@ -27,20 +41,25 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import moment from "moment/moment";
 import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
+import BookingList from "@/components/booking-components/BookingList.vue";
 
 interface DeskAvailabilityState {
   overlappingBookings: number | null
+  bookingsOfColleagues: Booking[]
 }
 
 export default defineComponent({
   name: 'desk-availability',
+  components: {BookingList},
   data: (): DeskAvailabilityState => ({
-    overlappingBookings: null
+    overlappingBookings: null,
+    bookingsOfColleagues: []
   }),
   computed: {
     ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"]),
     ...mapGetters("bookings", ["getBookingsByRoomAndDay"]),
-    ...mapState("bookings", ["bookings"])
+    ...mapState("bookings", ["bookings"]),
+    ...mapState('user', ['user']),
   },
   mounted() {
     this.fetchBookingDefaults()
@@ -56,6 +75,7 @@ export default defineComponent({
     }
   },
   methods: {
+
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
 
@@ -83,8 +103,9 @@ export default defineComponent({
     async loadAndCheck() {
 
       if (this.bookingDefaults?.room?.id) {
-
-        this.checkOverlaps(this.getBookingsByRoomAndDay(this.bookingDefaults.room.id, moment.now()))
+        const bookings = this.getBookingsByRoomAndDay(this.bookingDefaults.room.id, moment.now())
+        this.bookingsOfColleagues = [...bookings].filter((booking: Booking) => booking.user.id !== this.user.id)
+        this.checkOverlaps(bookings)
       }
     },
 
@@ -93,7 +114,6 @@ export default defineComponent({
       const start = moment().startOf("day")
       const end = moment().endOf("day")
 
-      console.log("test", start, end)
       const overlaps = BookingUtils.findOverlaps(bookings, start, end)
       this.overlappingBookings = new Set(overlaps.map(booking => booking.user.id)).size
     },

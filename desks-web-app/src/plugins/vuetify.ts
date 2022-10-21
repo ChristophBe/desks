@@ -9,7 +9,7 @@ import {createVuetify} from 'vuetify'
 export default createVuetify(
     {
         theme: {
-            defaultTheme:window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark":"light",
+            defaultTheme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light",
             themes: {
                 dark: {
                     dark: true,
