@@ -31,9 +31,7 @@ export default defineComponent({
     ... mapState("notification", ["text","notificationType", "time"])
   },
   watch:{
-    time (newText, oldText) {
-
-      console.log(newText,oldText)
+    time (newText) {
       this.snackbar = false;
       this.snackbar = newText !== ""
     }

@@ -85,9 +85,6 @@ export default defineComponent({
 
       const start = moment(this.date).add(this.start)
       const end = moment(this.date).add(this.end)
-
-
-      console.log(this.bookings)
       const overlaps = BookingUtils.findOverlaps(this.bookings, start, end)
       this.overlappingBookings = overlaps.length
     },
