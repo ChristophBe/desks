@@ -31,7 +31,7 @@
     <v-card-title class="mt-4">
       Colleagues
       <v-fade-transition>
-        <v-progress-circular v-if=" isLoadingBookingsByRoomAndDay(roomId, date)" class=" mr-4" indeterminate size="small"></v-progress-circular>
+        <v-progress-circular v-if="!booking || isLoadingBookingsByRoomAndDay(booking.roomId, booking.date)" class=" mr-4" indeterminate size="small"></v-progress-circular>
 
       </v-fade-transition>
     </v-card-title>

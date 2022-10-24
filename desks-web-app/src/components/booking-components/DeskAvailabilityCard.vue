@@ -6,12 +6,9 @@
           <v-card-title>Desk Availability</v-card-title>
           <v-card-subtitle>{{ bookingDefaults.room.name }}</v-card-subtitle>
         </div>
-        <div>
+        <div v-if="overlappingBookings !== null">
 
-            <v-menu
-                open-on-hover
-                v-if="overlappingBookings !== null"
-            >
+            <v-menu open-on-hover :disabled="bookingsOfColleagues.length<=0">
               <template v-slot:activator="{ props }">
                 <v-chip v-bind="props" :color="calculateType()">{{
                     overlappingBookings
@@ -19,9 +16,8 @@
                   {{ bookingDefaults.room.capacity }} desks booked today
                 </v-chip>
               </template>
-              <v-card v-if="bookingsOfColleagues.length>0">
                 <booking-list v-if="bookingsOfColleagues.length>0" :bookings="bookingsOfColleagues"></booking-list>
-              </v-card>
+
             </v-menu>
         </div>
       </div>
@@ -110,8 +106,7 @@ export default defineComponent({
 
       const start = moment().startOf("day")
       const end = moment().endOf("day")
-
-      console.log("test", start, end)
+      this.bookingsOfColleagues = bookings.filter(value => value.user.id !== this.user.id)
       const overlaps = BookingUtils.findOverlaps(bookings, start, end)
       this.overlappingBookings = new Set(overlaps.map(booking => booking.user.id)).size
     },
