@@ -1,17 +1,18 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-card-title>Desks</v-card-title>
-      <v-spacer></v-spacer>
-      <v-avatar
-          v-if="user"
-          color="primary"
-          size="48"
-      >
-        {{
-          user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
-        }}
-      </v-avatar>
+      <v-app-bar-title>Desks</v-app-bar-title>
+
+      <template v-slot:append v-if="user">
+        <v-avatar
+            color="primary"
+            size="48"
+        >
+          {{
+            user.givenName.charAt(0).toUpperCase() + user.familyName.charAt(0).toUpperCase()
+          }}
+        </v-avatar>
+      </template>
     </v-app-bar>
     <v-main>
 
