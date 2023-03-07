@@ -2,11 +2,13 @@
   <v-dialog
       v-model="showBookingFormDialog"
       persistent
+      width="400"
   >
     <BookingFormDialogue @close="showBookingFormDialog = false" :booking="bookingToEdit"></BookingFormDialogue>
   </v-dialog>
   <v-dialog
       v-model="showBookingDialog"
+      width="400"
   >
     <booking-details @close="showBookingDialog = false" :booking="bookingToShow"
                      @edit="openEditeBookingDialog(bookingToShow)"></booking-details>
@@ -35,7 +37,9 @@
                   <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
 
                 </v-list-item-header>
-                <v-list-item-action v-if="isOngoing(booking)"><v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text" >leave now</v-btn></v-list-item-action>
+                <v-list-item-action v-if="isOngoing(booking)">
+                  <v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text">leave now</v-btn>
+                </v-list-item-action>
               </v-list-item>
             </v-list>
           </v-card>
@@ -123,7 +127,7 @@ export default defineComponent({
     this.fetchBookingDefaults()
   },
   methods: {
-    ...mapActions("bookings", ["fetchMyBookings","leaveEarly"]),
+    ...mapActions("bookings", ["fetchMyBookings", "leaveEarly"]),
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     openCreateBookingDialog() {
       this.showBookingFormDialog = true
@@ -147,9 +151,9 @@ export default defineComponent({
     hasBookingsForToday() {
       return this.myBookingsOfTheDay.length > 0
     },
-    isOngoing(booking: Booking){
+    isOngoing(booking: Booking) {
       return moment(booking.start).isSameOrBefore(moment.now()) && moment(booking.end).isSameOrAfter(moment.now())
-      && !BookingUtils.roundToNextMinute().isSame(booking.end)
+          && !BookingUtils.roundToNextMinute().isSame(booking.end)
     },
   }
 
