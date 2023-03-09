@@ -1,33 +1,37 @@
 <template>
-  <v-card v-if="!bookingDefaultsLoading && bookingDefaults != null">
-    <v-card-item>
-      <div class="d-flex justify-space-between align-center">
-        <div>
-          <v-card-title>Desk Availability</v-card-title>
-          <v-card-subtitle>{{ bookingDefaults.room.name }}</v-card-subtitle>
-        </div>
-        <div v-if="overlappingBookings !== null">
 
-            <v-menu open-on-hover :disabled="bookingsOfColleagues.length<=0">
-              <template v-slot:activator="{ props }">
-                <v-chip v-bind="props" :color="calculateType()">{{
-                    overlappingBookings
-                  }} /
-                  {{ bookingDefaults.room.capacity }} desks booked today
-                </v-chip>
-              </template>
-                <booking-list v-if="bookingsOfColleagues.length>0" :bookings="bookingsOfColleagues"></booking-list>
 
-            </v-menu>
-        </div>
-      </div>
-    </v-card-item>
-    <v-card-actions>
-      <v-btn variant="text" @click="booksForToday">
-        book now
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+  <v-row>
+    <v-col><h1>This Week</h1></v-col>
+
+
+  </v-row>
+  <v-row>
+    <template v-for="(startOfDay, n) in days" :key="n">
+      <v-col>
+        <v-card :disabled="isDisabled(startOfDay)" :color="calculateType(startOfDay, n)"
+                :variant="isDisabled(startOfDay)?'flat':'tonal'">
+          <template v-slot:append>
+            <v-btn icon="mdi-plus" elevation="0" @click="bookForDay(startOfDay)"></v-btn>
+          </template>
+          <template v-slot:title>
+            {{ startOfDay.format("dddd") }}
+          </template>
+          <template v-slot:subtitle>
+            {{ startOfDay.format("L") }}
+          </template>
+
+
+          <v-card-text>
+
+            <v-chip>{{ n }} / 7 desks booked</v-chip>
+
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </template>
+  </v-row>
+
 </template>
 <script lang="ts">
 import {defineComponent} from "vue";
@@ -35,19 +39,21 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import moment from "moment/moment";
 import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
-import BookingList from "@/components/booking-components/BookingList.vue";
+import {Moment} from "moment";
 
 interface DeskAvailabilityState {
   overlappingBookings: number | null
   bookingsOfColleagues: Booking[]
+  days: Moment[]
 }
 
 export default defineComponent({
   name: 'desk-availability',
-  components: {BookingList},
+  components: {},
   data: (): DeskAvailabilityState => ({
     overlappingBookings: null,
-    bookingsOfColleagues: []
+    bookingsOfColleagues: [],
+    days: []
   }),
   computed: {
     ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"]),
@@ -56,6 +62,11 @@ export default defineComponent({
     ...mapState('user', ['user']),
   },
   mounted() {
+
+    const startOfWeek = moment().startOf("week").add(1, "days")
+    for (const i in [0, 0, 0, 0, 0]) {
+      this.days.push(moment(startOfWeek).add((i), "days"))
+    }
     this.fetchBookingDefaults()
     this.fetchBookings()
   },
@@ -72,10 +83,10 @@ export default defineComponent({
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
-
-    booksForToday: function () {
+    isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
+    bookForDay: function (startOfDay: Moment) {
       const startDefault = moment(this.bookingDefaults.start);
-      let start = moment().startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")
+      let start = startOfDay.startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")
       start = start.isBefore(moment.now()) ? BookingUtils.roundToNextFiveMinutes() : start
 
       const endDefault = moment(this.bookingDefaults.end);
@@ -111,16 +122,15 @@ export default defineComponent({
       this.overlappingBookings = new Set(overlaps.map(booking => booking.user.id)).size
     },
 
-    calculateType() {
-
-      if (this.overlappingBookings === null) {
-        return "error"
+    calculateType(startOfDay: moment.Moment, number: number): string {
+      if (this.isDisabled(startOfDay)) {
+        return ""
       }
-      if (this.overlappingBookings >= this.bookingDefaults.room.capacity) {
-        return "error"
+      if (number >= this.bookingDefaults.room.capacity) {
+        return "red"
       }
-      if (this.overlappingBookings > this.bookingDefaults.room.capacity * 0.8) {
-        return "warning"
+      if (number > this.bookingDefaults.room.capacity * 0.8) {
+        return "orange"
       }
 
       return "success"
