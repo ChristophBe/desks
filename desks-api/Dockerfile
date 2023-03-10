@@ -1,4 +1,4 @@
-FROM golang:1.16-bullseye as build
+FROM golang:1.20-bullseye as build
 
 RUN mkdir /src
 ADD . /src/
