@@ -1,33 +1,28 @@
 <template>
 
 
-  <v-row>
-    <v-col><h1>This Week</h1></v-col>
+  <v-row class="mt-4">
+    <v-col><h1>{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1></v-col>
 
-
+    <v-col align-self="center" class="d-flex justify-end">
+      <v-btn icon variant="text" @click="()=>previousWeek()"
+             :disabled="isPreviousWeekDisabled()">
+        <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
+      <v-btn icon variant="text" @click="()=>nextWeek()">
+        <v-icon>mdi-arrow-right</v-icon>
+      </v-btn>
+    </v-col>
   </v-row>
   <v-row>
-    <template v-for="(startOfDay, n) in days" :key="n">
+    <template v-for="n in 5" :key="n">
       <v-col>
-        <v-card :disabled="isDisabled(startOfDay)" :color="calculateType(startOfDay, n)"
-                :variant="isDisabled(startOfDay)?'flat':'tonal'">
-          <template v-slot:append>
-            <v-btn icon="mdi-plus" elevation="0" @click="bookForDay(startOfDay)"></v-btn>
-          </template>
-          <template v-slot:title>
-            {{ startOfDay.format("dddd") }}
-          </template>
-          <template v-slot:subtitle>
-            {{ startOfDay.format("L") }}
-          </template>
-
-
-          <v-card-text>
-
-            <v-chip>{{ n }} / 7 desks booked</v-chip>
-
-          </v-card-text>
-        </v-card>
+        <availability-card
+            v-if="this.bookingDefaults"
+            :startOfDay="calculateNthDayOfWeek(n)"
+            :room="this.bookingDefaults.room"
+            @add-booking="bookForDay(calculateNthDayOfWeek(n))"
+        ></availability-card>
       </v-col>
     </template>
   </v-row>
@@ -40,20 +35,21 @@ import moment from "moment/moment";
 import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
 import {Moment} from "moment";
+import AvailabilityCard from "@/components/booking-components/AvailabilityCard.vue"
 
 interface DeskAvailabilityState {
   overlappingBookings: number | null
   bookingsOfColleagues: Booking[]
-  days: Moment[]
+  startOfWeek: Moment
 }
 
 export default defineComponent({
   name: 'desk-availability',
-  components: {},
+  components: {AvailabilityCard},
   data: (): DeskAvailabilityState => ({
     overlappingBookings: null,
     bookingsOfColleagues: [],
-    days: []
+    startOfWeek: moment().startOf("week")
   }),
   computed: {
     ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"]),
@@ -63,10 +59,6 @@ export default defineComponent({
   },
   mounted() {
 
-    const startOfWeek = moment().startOf("week").add(1, "days")
-    for (const i in [0, 0, 0, 0, 0]) {
-      this.days.push(moment(startOfWeek).add((i), "days"))
-    }
     this.fetchBookingDefaults()
     this.fetchBookings()
   },
@@ -75,15 +67,26 @@ export default defineComponent({
       await this.fetchBookings()
       await this.loadAndCheck()
     },
-    bookings() {
-      this.loadAndCheck()
-    }
   },
   methods: {
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
+
+    nextWeek() {
+      this.startOfWeek = moment(this.startOfWeek).add(1, "week")
+    },
+    previousWeek() {
+      this.startOfWeek = moment(this.startOfWeek).subtract(1, "week")
+    },
+    isPreviousWeekDisabled(): boolean {
+      return this.startOfWeek.isSameOrBefore(moment().startOf("week"))
+    },
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
+
+    calculateNthDayOfWeek(n: number): Moment {
+      return moment(this.startOfWeek).add(n, "day")
+    },
     bookForDay: function (startOfDay: Moment) {
       const startDefault = moment(this.bookingDefaults.start);
       let start = startOfDay.startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")

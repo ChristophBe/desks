@@ -80,7 +80,7 @@ const getters: GetterTree<BookingsState, RootState> = {
     },
     isLoadingBookingsByRoomAndDay(state: BookingsState) {
         return (roomId?: Room["id"], date?: MomentInput) => {
-            if(!roomId && !date){
+            if (!roomId && !date) {
                 return false
             }
             const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
