@@ -1,18 +1,13 @@
 <template>
   <v-list>
     <v-list-item two-line v-for="booking in [...bookings].sort(compareByName)" :key="booking.id">
-      <v-list-item-avatar start>
+      <template v-slot:prepend>
         <v-avatar color="primary">
           {{ booking.user.givenName.charAt(0) }}{{ booking.user.familyName.charAt(0) }}
         </v-avatar>
-
-
-      </v-list-item-avatar>
-      <v-list-item-header>
-        <v-list-item-title>{{ booking.user.givenName }} {{ booking.user.familyName }}</v-list-item-title>
-        <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
-      </v-list-item-header>
-
+      </template>
+      <template v-slot:title>{{ booking.user.givenName }} {{ booking.user.familyName }}</template>
+      <template v-slot:subtitle>{{ $format.timeRange(booking.start, booking.end) }}</template>
     </v-list-item>
   </v-list>
 </template>
