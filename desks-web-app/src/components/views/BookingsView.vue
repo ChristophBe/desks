@@ -32,14 +32,12 @@
                   :key="booking.id"
                   @click="openShowBookingDialog(booking)"
               >
-                <v-list-item-header>
-                  <v-list-item-title>{{ booking.room.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ $format.timeRange(booking.start, booking.end) }}</v-list-item-subtitle>
+                <template v-slot:title>{{ booking.room.name }}</template>
+                <template v-slot:subtitle>{{ $format.timeRange(booking.start, booking.end) }}</template>
 
-                </v-list-item-header>
-                <v-list-item-action v-if="isOngoing(booking)">
+                <template v-slot:append v-if="isOngoing(booking)">
                   <v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text">leave now</v-btn>
-                </v-list-item-action>
+                </template>
               </v-list-item>
             </v-list>
           </v-card>
