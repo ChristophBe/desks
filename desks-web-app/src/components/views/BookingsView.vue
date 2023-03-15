@@ -22,7 +22,7 @@
       <v-row class="mt-8">
         <v-col>
 
-          <h1 class="text-h4">Upcoming Bookings</h1>
+          <h1 class="text-h4">My Desk Bookings</h1>
         </v-col>
 
         <v-col align-self="center" class="d-flex justify-end">
