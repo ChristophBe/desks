@@ -6,7 +6,10 @@
           {{ booking.user.givenName.charAt(0) }}{{ booking.user.familyName.charAt(0) }}
         </v-avatar>
       </template>
-      <template v-slot:title>{{ booking.user.givenName }} {{ booking.user.familyName }}</template>
+      <template v-slot:title>
+        <template v-if="booking.user.id === user.id">You</template>
+        <template v-else>{{ booking.user.givenName }}{{ booking.user.familyName }}</template>
+      </template>
       <template v-slot:subtitle>{{ $format.timeRange(booking.start, booking.end) }}</template>
     </v-list-item>
   </v-list>
@@ -16,6 +19,7 @@
 import {defineComponent} from "vue";
 import Booking from "@/models/Booking";
 import moment from "moment";
+import {mapState} from "vuex";
 
 
 export default defineComponent({
@@ -25,6 +29,9 @@ export default defineComponent({
     bookings: {
       type: Array
     }
+  },
+  computed:{
+    ...mapState('user', ['user']),
   },
 
   methods: {

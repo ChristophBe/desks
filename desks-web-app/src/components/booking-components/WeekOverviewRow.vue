@@ -2,7 +2,10 @@
 
 
   <v-row class="mt-4">
-    <v-col><h1>{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1></v-col>
+    <v-col>
+      <h1 class="text-h4">{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1>
+      <h3 class="text-subtitle-1">{{$format.date(calculateNthDayOfWeek(1))}} - {{$format.date(calculateNthDayOfWeek(5))}}</h3>
+    </v-col>
 
     <v-col align-self="center" class="d-flex justify-end">
       <v-btn icon variant="text" @click="()=>previousWeek()"
@@ -87,6 +90,7 @@ export default defineComponent({
     calculateNthDayOfWeek(n: number): Moment {
       return moment(this.startOfWeek).add(n, "day")
     },
+
     bookForDay: function (startOfDay: Moment) {
       const startDefault = moment(this.bookingDefaults.start);
       let start = startOfDay.startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")

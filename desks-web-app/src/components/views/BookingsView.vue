@@ -19,10 +19,10 @@
     <v-container v-else>
       <desk-availabilty @book="openEditeBookingDialog"/>
 
-      <v-row>
+      <v-row class="mt-8">
         <v-col>
 
-          <h1>Upcoming Bookings</h1>
+          <h1 class="text-h4">Upcoming Bookings</h1>
         </v-col>
 
         <v-col align-self="center" class="d-flex justify-end">
@@ -72,7 +72,7 @@ import BookingsTable from "@/components/booking-components/BookingsTable.vue";
 import Booking from "@/models/Booking";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
-import DeskAvailabilty from "@/components/booking-components/DeskAvailabilityCard.vue";
+import DeskAvailabilty from "@/components/booking-components/WeekOverviewRow.vue";
 import Loading from "@/components/Loading.vue";
 import moment from "moment";
 import BookingUtils from "@/utils/booking-utils";
