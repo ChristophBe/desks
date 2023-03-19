@@ -5,7 +5,7 @@
       <th class="text-left w-33">
         Room
       </th>
-      <th class="text-left">
+      <th class="text-left w-25">
         Date
       </th>
       <th class="text-left">
@@ -29,6 +29,7 @@
       <td>{{ $format.time(item.start) }}</td>
       <td>{{ $format.time(item.end) }}</td>
       <td class="d-flex justify-end align-center">
+        <v-btn v-if="isOngoing(item)" @click.stop.prevent="() => leaveEarly(item)" variant="flat">Leave now</v-btn>
         <v-btn
             icon
             elevation="0"
@@ -47,6 +48,7 @@ import {defineComponent} from "vue";
 import Booking from "@/models/Booking";
 import BookingContextMenu from "@/components/booking-components/BookingContextMenu.vue";
 import moment from "moment/moment";
+import {mapActions} from "vuex";
 
 export default defineComponent({
   name: "BookingsTable",
@@ -56,12 +58,17 @@ export default defineComponent({
     bookings: Array
   },
   methods: {
+    ...mapActions("bookings", ["leaveEarly"]),
     editBooking(booking: Booking) {
       this.$emit("editBooking", booking)
     },
 
     compareBookingsByTime(a: Booking, b: Booking): number {
       return moment(a.start).diff(moment(b.start))
+    },
+
+    isOngoing(booking:Booking): boolean{
+      return moment().isBetween(booking.start,booking.end)
     }
   }
 

@@ -228,30 +228,75 @@ func GetBookingsByRoomAndDate(_ models.User, writer http.ResponseWriter, request
 		return
 	}
 
-	dateQueryParameter := request.URL.Query().Get("date")
-	if dateQueryParameter == "" {
-		err = util.NotFound(fmt.Errorf("dateQueryParameter not set"))
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
+	var bookings []models.Booking
 
-	date, err := time.Parse("2006-01-02", dateQueryParameter)
-	if err != nil {
-		err = util.NotFound(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	bookings, err := data.NewBookingRepository().FetchByRoomAndDate(ctx, roomId, date)
-	if err != nil {
-		err = util.NotFound(err)
-		util.ErrorResponseWriter(err, writer, request)
+	if request.URL.Query().Has("date") {
+		bookings, err = handleBookingsByDateQuery(ctx, request, roomId)
+		if err != nil {
+			util.ErrorResponseWriter(err, writer, request)
+			return
+		}
+	} else if request.URL.Query().Has("from") && request.URL.Query().Has("to") {
+		bookings, err = handleBookingsByRangeQuery(ctx, request, roomId)
+		if err != nil {
+			util.ErrorResponseWriter(err, writer, request)
+			return
+		}
+	} else {
+		util.ErrorResponseWriter(util.BadRequest(fmt.Errorf("date Parameter or from and to are not set")), writer, request)
 		return
 	}
 
 	if err = util.JsonResponseWriter(bookings, http.StatusOK, writer, request); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
 	}
+}
+
+func handleBookingsByDateQuery(ctx context.Context, request *http.Request, roomId int64) (bookings []models.Booking, err error) {
+	date, err := parseTimeFromQueryParameter(request, "2006-01-02", "date")
+	if err != nil {
+		return
+	}
+
+	bookings, err = data.NewBookingRepository().FetchByRoomAndDate(ctx, roomId, date)
+	if err != nil {
+		err = util.NotFound(err)
+		return
+	}
+	return
+}
+
+func parseTimeFromQueryParameter(request *http.Request, layout, name string) (result time.Time, err error) {
+	queryParameter := request.URL.Query().Get(name)
+	if queryParameter == "" {
+		err = util.NotFound(fmt.Errorf(name + " QueryParameter not set or empty"))
+		return
+	}
+
+	result, err = time.Parse(layout, queryParameter)
+	if err != nil {
+		err = util.NotFound(err)
+		return
+	}
+	return
+}
+func handleBookingsByRangeQuery(ctx context.Context, request *http.Request, roomId int64) (bookings []models.Booking, err error) {
+
+	from, err := parseTimeFromQueryParameter(request, time.RFC3339, "from")
+	if err != nil {
+		return
+	}
+	to, err := parseTimeFromQueryParameter(request, time.RFC3339, "to")
+	if err != nil {
+		return
+	}
+
+	bookings, err = data.NewBookingRepository().FetchByRoomAndRange(ctx, roomId, from, to)
+	if err != nil {
+		err = util.NotFound(err)
+		return
+	}
+	return
 }
 func GetBookingDefaults(user models.User, writer http.ResponseWriter, request *http.Request) {
 	userId, err := util.GetIntegerUrlParameter(request, "id")

@@ -12,7 +12,6 @@ interface RoomAndDate {
     roomId: Room["id"]
     date: MomentInput
 }
-
 interface SetBookingsPayload extends RoomAndDate {
     bookings: Array<Booking>
 }
@@ -22,13 +21,15 @@ export interface BookingsState {
     myBookingsFetched: boolean
     bookings: Array<Booking>
     loadingByRoomAndDate: Map<string, boolean>
+    loadingByRoomAndWeek: Map<string, boolean>
 }
 
 const state: BookingsState = {
     loadingMyBookings: false,
     myBookingsFetched: true,
     bookings: [],
-    loadingByRoomAndDate: new Map<string, boolean>()
+    loadingByRoomAndDate: new Map<string, boolean>(),
+    loadingByRoomAndWeek: new Map<string, boolean>()
 }
 
 function mergeBooking(bookings: Array<Booking>, bookingsToUpdate: Array<Booking>): Array<Booking> {
@@ -54,8 +55,17 @@ const mutations: MutationTree<BookingsState> = {
         state.loadingByRoomAndDate.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, false)
 
     },
+    setBookingsForWeek(state: BookingsState, {bookings, roomId, date}: SetBookingsPayload) {
+        state.bookings = mergeBooking(state.bookings, bookings)
+
+        state.loadingByRoomAndWeek.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, false)
+
+    },
     loadingForRoomAndDate(state: BookingsState, {roomId, date}: RoomAndDate) {
-        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, true)
+        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).startOf("week").format('YYYY-MM-DD')}`, true)
+    },
+    loadingForRoomAndWeek(state: BookingsState, {roomId, date}: RoomAndDate) {
+        state.loadingByRoomAndWeek.set(`${roomId}-${moment(date).startOf("week").format('YYYY-MM-DD')}`, true)
     },
     removeBooking(state: BookingsState, idToRemove: Booking['id']) {
         state.bookings = state.bookings.filter(booking => booking.id !== idToRemove)
@@ -80,11 +90,22 @@ const getters: GetterTree<BookingsState, RootState> = {
     },
     isLoadingBookingsByRoomAndDay(state: BookingsState) {
         return (roomId?: Room["id"], date?: MomentInput) => {
-            if(!roomId && !date){
+            if (!roomId && !date) {
                 return false
             }
             const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
-            return state.loadingByRoomAndDate.has(key) && state.loadingByRoomAndDate.get(key)
+            const weekKey = `${roomId}-${moment(date).startOf('week').format('YYYY-MM-DD')}`
+            return (state.loadingByRoomAndDate.has(key) && state.loadingByRoomAndDate.get(key))
+              || (state.loadingByRoomAndWeek.has(weekKey) && state.loadingByRoomAndWeek.get(weekKey))
+        }
+    },
+    isLoadingBookingsByRoomAndWeek(state: BookingsState) {
+        return (roomId?: Room["id"], date?: MomentInput) => {
+            if (!roomId && !date) {
+                return false
+            }
+            const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
+            return state.loadingByRoomAndWeek.has(key) && state.loadingByRoomAndWeek.get(key)
         }
     },
     myBookings(state: BookingsState, _, rootState: RootState): Array<Booking> {
@@ -150,6 +171,32 @@ const actions: ActionTree<BookingsState, RootState> = {
             commit("setBookings", {bookings: bookings, roomId: roomId, date: date})
         } catch (e) {
             console.log(`Failed to fetch bookings for room ${roomId} on ${dateString} `, e)
+        }
+    },
+    async fetchBookingsByRoomAndWeek({commit, getters}: ActionContext<BookingsState, RootState>, {
+        roomId,
+        date,
+    }: RoomAndDate) {
+
+        if (!roomId || !date || getters.isLoadingBookingsByRoomAndWeek(roomId, date)) {
+            return
+        }
+        commit("loadingForRoomAndWeek", {roomId: roomId, date: date})
+        const from = moment(date).startOf("week").toISOString()
+        const to = moment(date).endOf("week").toISOString()
+
+
+        console.log(`fetch bookings for room ${roomId} from ${from} to ${to}`)
+        const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?from=${from}&to=${to}`)
+        if (res.status >= 400) {
+            console.log(`Failed to fetch bookings for room ${roomId} from ${from} to ${to}`)
+            return
+        }
+        try {
+            const bookings: Array<Booking> = await res.json()
+            commit("setBookingsForWeek", {bookings: bookings, roomId: roomId, date: date})
+        } catch (e) {
+            console.log(`Failed to fetch bookings for room ${roomId} from ${from} to ${to}`, e)
         }
     },
 

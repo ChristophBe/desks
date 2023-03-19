@@ -89,7 +89,7 @@ export default defineComponent({
       this.overlappingBookings = overlaps.length
     },
 
-    calculateType(numberOfOverlaps: number, capacity: number) {
+    calculateColor(numberOfOverlaps: number, capacity: number) {
       if (numberOfOverlaps >= capacity) {
         return "error"
       }

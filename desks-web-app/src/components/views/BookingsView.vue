@@ -17,50 +17,31 @@
 
     <loading v-if="(loading && !bookingsFetched) || (bookingDefaultsLoading && !bookingDefaultsFetched)"></loading>
     <v-container v-else>
+      <desk-availabilty @book="openEditeBookingDialog"/>
 
-      <v-row class="mb-3">
-        <v-col :md="hasBookingsForToday() ? 6 : 12" cols="12">
-          <desk-availabilty @book="openEditeBookingDialog"/>
-        </v-col>
-        <v-col cols="12" md="6" v-if="hasBookingsForToday()">
-          <v-card>
-            <v-card-title>Today</v-card-title>
+      <v-row class="mt-8">
+        <v-col>
 
-            <v-list>
-              <v-list-item
-                  v-for="booking in myBookingsOfTheDay"
-                  :key="booking.id"
-                  @click="openShowBookingDialog(booking)"
-              >
-                <template v-slot:title>{{ booking.room.name }}</template>
-                <template v-slot:subtitle>{{ $format.timeRange(booking.start, booking.end) }}</template>
-
-                <template v-slot:append v-if="isOngoing(booking)">
-                  <v-btn @click.stop.prevent="onLeaveEarly(booking) " variant="text">leave now</v-btn>
-                </template>
-              </v-list-item>
-            </v-list>
-          </v-card>
+          <h1 class="text-h4">My Desk Bookings</h1>
         </v-col>
 
+        <v-col align-self="center" class="d-flex justify-end">
+          <v-btn
+              variant="flat"
+              class="rounded-pill"
+              @click="openCreateBookingDialog()"
+          >
+            <template v-slot:prepend>
+
+              <v-icon>mdi-plus</v-icon>
+            </template>
+            Add Booking
+          </v-btn>
+        </v-col>
       </v-row>
-
       <v-row>
         <v-col cols="12">
-          <v-card>
-            <v-card-title class="d-flex">
-              <div class="mr-auto">
-                My Desk Bookings
-              </div>
-
-              <v-btn
-                  icon
-                  elevation="0"
-                  @click="openCreateBookingDialog()"
-              >
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </v-card-title>
+          <v-card variant="flat">
             <v-card-text v-if="myUpcomingBookings.length <= 0">
               <v-alert>
                 You have no upcoming desk bookings.
@@ -91,7 +72,7 @@ import BookingsTable from "@/components/booking-components/BookingsTable.vue";
 import Booking from "@/models/Booking";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
-import DeskAvailabilty from "@/components/booking-components/DeskAvailabilityCard.vue";
+import DeskAvailabilty from "@/components/booking-components/WeekOverviewRow.vue";
 import Loading from "@/components/Loading.vue";
 import moment from "moment";
 import BookingUtils from "@/utils/booking-utils";
