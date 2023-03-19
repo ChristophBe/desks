@@ -11,6 +11,7 @@ type BookingRepository interface {
 	Save(ctx context.Context, booking models.Booking) (models.Booking, error)
 	FetchByUserId(ctx context.Context, userId int64) ([]models.Booking, error)
 	FetchByRoomAndDate(ctx context.Context, roomId int64, date time.Time) ([]models.Booking, error)
+	FetchByRoomAndRange(ctx context.Context, id int64, from time.Time, to time.Time) ([]models.Booking, error)
 	AnonymizeOldBookings(ctx context.Context, age int) (int64, error)
 	FetchById(ctx context.Context, id int64) (models.Booking, error)
 	Delete(ctx context.Context, booking models.Booking) error
@@ -63,11 +64,14 @@ func (b bookingRepositoryImpl) AnonymizeOldBookings(ctx context.Context, maxAgeI
 }
 
 func (b bookingRepositoryImpl) FetchByRoomAndDate(ctx context.Context, roomId int64, date time.Time) (bookings []models.Booking, err error) {
+	return b.FetchByRoomAndRange(ctx, roomId, date, date.Add(24*time.Hour))
+}
+func (b bookingRepositoryImpl) FetchByRoomAndRange(ctx context.Context, roomId int64, from, to time.Time) (bookings []models.Booking, err error) {
 	db, err := GetConnection(ctx)
 	if err != nil {
 		return
 	}
-	err = db.Preload("User").Preload("Room").Where("room_id = ? and start BETWEEN ?::timestamp and ?::timestamp ", roomId, date, date.Add(24*time.Hour)).Order("start").Find(&bookings).Error
+	err = db.Preload("User").Preload("Room").Where("room_id = ? and start BETWEEN ?::timestamp and ?::timestamp ", roomId, from, to).Order("start").Find(&bookings).Error
 	return
 }
 func (b bookingRepositoryImpl) FetchByUserId(ctx context.Context, userId int64) (bookings []models.Booking, err error) {

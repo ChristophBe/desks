@@ -40,10 +40,10 @@ export default defineComponent({
     ...mapState("bookings", ["bookings"]),
     ...mapState('user', ['user']),
   },
-  mounted() {
+  async mounted() {
 
-    this.fetchBookingDefaults()
-    this.fetchBookings()
+    await this.fetchBookingDefaults()
+    await this.fetchBookings()
   },
   watch: {
     async bookingDefaults() {
@@ -53,8 +53,7 @@ export default defineComponent({
   methods: {
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
-    ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
-
+    ...mapActions("bookings", ["fetchBookingsByRoomAndWeek"]),
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
@@ -78,27 +77,15 @@ export default defineComponent({
       this.$emit("add-booking", booking)
     },
 
-    async fetchBookings() {
-      if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndDate({roomId: this.bookingDefaults.room.id, date: moment.now()})
-      }
+    async mounted(){
+      await this.fetchBookings()
     },
 
-
-    calculateType(startOfDay: moment.Moment, number: number): string {
-      if (this.isDisabled(startOfDay)) {
-        return ""
+    async fetchBookings() {
+      if (this.bookingDefaults && this.bookingDefaults.room) {
+        await this.fetchBookingsByRoomAndWeek({roomId: this.bookingDefaults.room.id, date: this.startOfWeek})
       }
-      if (number >= this.bookingDefaults.room.capacity) {
-        return "red"
-      }
-      if (number > this.bookingDefaults.room.capacity * 0.8) {
-        return "orange"
-      }
-
-      return "success"
-
-    }
+    },
   }
 });
 </script>

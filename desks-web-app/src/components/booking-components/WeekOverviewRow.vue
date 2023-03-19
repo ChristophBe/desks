@@ -35,7 +35,7 @@ import {defineComponent} from "vue";
 import moment from "moment/moment";
 import {Moment} from "moment";
 import WeekOverviewWindow from "@/components/booking-components/WeekOverviewWindow.vue";
-import {mapState} from "vuex";
+import {mapActions, mapState} from "vuex";
 
 interface DeskAvailabilityState {
   startOfWeek: Moment
@@ -51,17 +51,16 @@ export default defineComponent({
     weeks: [moment().startOf("week"), moment().startOf("week").add(1, "week")],
     startOfWeek: moment().startOf("week")
   }),
-
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
   methods: {
     nextWeek() {
       if(this.window == this.weeks.length - 2){
-        this.weeks = [...this.weeks,moment(this.weeks[this.weeks.length-1]).add(1, "week")]
+        const additionalWindow = moment(this.weeks[this.weeks.length-1]).add(1, "week")
+        this.weeks = [...this.weeks,additionalWindow]
       }
       this.window++
-
       this.startOfWeek = this.weeks[this.window]
     },
     previousWeek() {

@@ -1,7 +1,10 @@
 <template>
 
-  <v-card :v-if="startOfDay" :disabled="isDisabled(startOfDay)" :color="calculateType(startOfDay)"
-          :variant="isDisabled(startOfDay)?'flat':'tonal'">
+  <v-card :v-if="startOfDay"
+          :disabled="isDisabled() || isLoading()"
+          :color="calculateColor()"
+          :variant="isDisabled() || isLoading() ?'flat':'tonal'"
+    >
     <template v-slot:append>
       <v-btn icon="mdi-plus" elevation="0" @click="$emit('addBooking')"></v-btn>
     </template>
@@ -17,11 +20,11 @@
 
       <v-menu
           open-on-hover
-          :disabled="this.bookingNumber <= 0"
+          :disabled="isLoading() || this.bookingNumber <= 0"
       >
         <template v-slot:activator="{ props }">
-
-          <v-chip v-bind="props">{{ this.bookingNumber }} / {{ this.room.capacity }} desks booked</v-chip>
+          <v-chip v-if="isLoading()" class="w-75"></v-chip>
+          <v-chip v-else v-bind="props">{{ this.bookingNumber }} / {{ this.room.capacity }} desks booked</v-chip>
         </template>
 
         <booking-list :bookings="getBookingsByRoomAndDay(room.id, startOfDay)" ></booking-list>
@@ -64,46 +67,35 @@ export default defineComponent({
     bookingNumber: 0
   }),
   computed: {
-
-    ...mapState("defaults", ["bookingDefaults", "bookingDefaultsLoading"]),
     ...mapGetters("bookings", ["getBookingsByRoomAndDay", "isLoadingBookingsByRoomAndDay"]),
     ...mapState("bookings", ["bookings"]),
-    ...mapState('user', ['user']),
   },
-  mount() {
-    this.loadAndCheck()
-  },
-
   watch: {
-    async startOfDay() {
-      await this.loadAndCheck()
-    },
-    async room() {
-      await this.loadAndCheck()
-    },
+
     bookings() {
+      this.check()
+    },
+    room() {
       this.check()
     }
   },
   methods: {
 
-    ...mapActions("defaults", ["fetchBookingDefaults"]),
-    ...mapActions("bookings", ["fetchBookingsByRoomAndDate"]),
-    isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
-
-    async loadAndCheck() {
-
-      await this.fetchBookingsByRoomAndDate({roomId: this.room.id, date: this.startOfDay})
-      this.check()
+    isDisabled(): boolean {
+      return  this.startOfDay.isBefore(moment().startOf("day"))
     },
+    isLoading (): boolean {
+      return this.isLoadingBookingsByRoomAndDay(this.room.id, this.startOfDay)
+    },
+
 
     check() {
       const endOfDay = moment(this.startOfDay).endOf("day")
       const overlaps = BookingUtils.findOverlaps(this.getBookingsByRoomAndDay(this.room.id,this.startOfDay ), this.startOfDay, endOfDay)
       this.bookingNumber = new Set(overlaps.map(booking => booking.user.id)).size
     },
-    calculateType(startOfDay: Moment): string {
-      if (this.isDisabled(startOfDay)) {
+    calculateColor(): string {
+      if (this.isDisabled() || this.isLoading()) {
         return ""
       }
       if (this.bookingNumber >= this.room.capacity) {
