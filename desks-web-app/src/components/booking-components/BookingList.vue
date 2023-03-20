@@ -3,12 +3,12 @@
     <v-list-item two-line v-for="booking in [...bookings].sort(compareByName)" :key="booking.id">
       <template v-slot:prepend>
         <v-avatar color="primary">
-          {{ booking.user.givenName.charAt(0) }}{{ booking.user.familyName.charAt(0) }}
+          {{ $format.userInitials(booking.user) }}
         </v-avatar>
       </template>
       <template v-slot:title>
         <template v-if="booking.user.id === user.id">You</template>
-        <template v-else>{{ booking.user.givenName }}{{ booking.user.familyName }}</template>
+        <template v-else>{{ $format.userFullName(booking.user) }}</template>
       </template>
       <template v-slot:subtitle>{{ $format.timeRange(booking.start, booking.end) }}</template>
     </v-list-item>
