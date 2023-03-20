@@ -61,14 +61,17 @@ export default defineComponent({
       return moment(this.startOfWeek).add(n, "day")
     },
 
-    bookForDay: function (startOfDay: Moment) {
-      const startDefault = moment(this.bookingDefaults.start);
-      let start = startOfDay.startOf("day").add(startDefault.hour(), "hour").add(startDefault.minutes(), "minute")
+    setDay(base:MomentInput, day: Moment): Moment{
+      return moment(base).set({'year': day.year(), 'month': day.month(),'day': day.day()});
+    },
+
+    bookForDay(startOfDay: Moment) {
+
+      let start = this.setDay(this.bookingDefaults.start, startOfDay);
       start = start.isBefore(moment.now()) ? BookingUtils.roundToNextFiveMinutes() : start
 
-      const endDefault = moment(this.bookingDefaults.end);
-      let end = moment().startOf("day").add(endDefault.hour(), "hour").add(endDefault.minutes(), "minute")
-      end = end.isSameOrAfter(moment.now()) && end.isSameOrAfter(start) ? end : moment(start).add(1, "hour")
+      let end = this.setDay(this.bookingDefaults.end, startOfDay)
+      end = end.isSameOrAfter(start) ? end : moment(start).add(1, "hour")
       const booking: Partial<Booking> = {
         room: this.bookingDefaults.room,
         start: start.toDate(),
