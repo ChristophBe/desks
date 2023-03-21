@@ -9,7 +9,7 @@
       <v-btn icon="mdi-plus" elevation="0" @click="$emit('addBooking')"></v-btn>
     </template>
     <template v-slot:title>
-      {{ startOfDay.format("dddd") }}
+      {{ startOfDay.isSame(today, "days") ? "Today" : startOfDay.format("dddd") }}
     </template>
     <template v-slot:subtitle>
       {{ $format.date(startOfDay)}}
@@ -38,11 +38,10 @@
 
 import {defineComponent, PropType} from "vue";
 import moment from "moment";
-import {mapActions, mapGetters, mapState} from "vuex";
+import { mapGetters, mapState} from "vuex";
 import {Moment} from "moment/moment";
 import Room from "@/models/Room";
 import BookingUtils from "@/utils/booking-utils";
-import {th} from "vuetify/locale";
 import BookingList from "@/components/booking-components/BookingList.vue";
 
 interface AvailabilityCardState {
@@ -69,6 +68,7 @@ export default defineComponent({
   computed: {
     ...mapGetters("bookings", ["getBookingsByRoomAndDay", "isLoadingBookingsByRoomAndDay"]),
     ...mapState("bookings", ["bookings"]),
+    today: () => moment()
   },
   watch: {
 
