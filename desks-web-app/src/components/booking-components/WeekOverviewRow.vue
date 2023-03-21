@@ -4,7 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1>
-      <h3 class="text-subtitle-1">{{$format.date(calculateNthNextDay(0))}} - {{$format.date(calculateNthNextDay(6))}} | {{bookingDefaults?.room?.name}}</h3>
+      <h3 class="text-subtitle-1">{{$format.date(calculateNthNextDay(0))}} - {{$format.date(calculateLastWeekdayOfPeriod(calculateNthNextDay(6)))}} | {{bookingDefaults?.room?.name}}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -76,6 +76,9 @@ export default defineComponent({
     calculateNthNextDay(n: number): Moment {
       return moment(this.startOfWeek).add(n, "day")
     },
+    calculateLastWeekdayOfPeriod(endOfPeriod: Moment): Moment {
+      return endOfPeriod.isoWeekday() <= 5 ? endOfPeriod : endOfPeriod.isoWeekday(5);
+    }
 
   }
 });
