@@ -4,7 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1>
-      <h3 class="text-subtitle-1">{{$format.date(calculateNthDayOfWeek(1))}} - {{$format.date(calculateNthDayOfWeek(5))}} | {{bookingDefaults?.room?.name}}</h3>
+      <h3 class="text-subtitle-1">{{$format.date(calculateNthNextDay(0))}} - {{$format.date(calculateNthNextDay(6))}} | {{bookingDefaults?.room?.name}}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -35,7 +35,7 @@ import {defineComponent} from "vue";
 import moment from "moment/moment";
 import {Moment} from "moment";
 import WeekOverviewWindow from "@/components/booking-components/WeekOverviewWindow.vue";
-import {mapActions, mapState} from "vuex";
+import {mapState} from "vuex";
 
 interface DeskAvailabilityState {
   startOfWeek: Moment
@@ -48,8 +48,8 @@ export default defineComponent({
   components: {WeekOverviewWindow},
   data: (): DeskAvailabilityState => ({
     window: 0,
-    weeks: [moment().startOf("week"), moment().startOf("week").add(1, "week")],
-    startOfWeek: moment().startOf("week")
+    weeks: [moment().startOf("day"), moment().add(1, "week").day(1)],
+    startOfWeek: moment().startOf("day")
   }),
   computed:{
     ...mapState("defaults",["bookingDefaults"])
@@ -73,7 +73,7 @@ export default defineComponent({
     },
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
-    calculateNthDayOfWeek(n: number): Moment {
+    calculateNthNextDay(n: number): Moment {
       return moment(this.startOfWeek).add(n, "day")
     },
 

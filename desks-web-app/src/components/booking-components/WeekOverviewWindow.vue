@@ -1,13 +1,13 @@
 <template>
 
   <v-row>
-    <template v-for="n in 5" :key="n">
-      <v-col>
+    <template v-for="n in [0,1,2,3,4,5,6]" :key="n">
+      <v-col v-if="this.bookingDefaults && calculateNthNextDay(n).isoWeekday() <= 5">
         <availability-card
             v-if="this.bookingDefaults"
-            :startOfDay="calculateNthDayOfWeek(n)"
+            :startOfDay="calculateNthNextDay(n)"
             :room="this.bookingDefaults.room"
-            @add-booking="bookForDay(calculateNthDayOfWeek(n))"
+            @add-booking="bookForDay(calculateNthNextDay(n))"
         ></availability-card>
       </v-col>
     </template>
@@ -42,6 +42,8 @@ export default defineComponent({
   },
   async mounted() {
 
+    console.log(this.startOfWeek);
+
     await this.fetchBookingDefaults()
     await this.fetchBookings()
   },
@@ -57,7 +59,8 @@ export default defineComponent({
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
-    calculateNthDayOfWeek(n: number): Moment {
+    calculateNthNextDay(n: number): Moment {
+      console.log(moment(this.startOfWeek).add(n, "day"))
       return moment(this.startOfWeek).add(n, "day")
     },
 
