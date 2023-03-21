@@ -2,7 +2,8 @@
 
   <v-row>
     <template v-for="n in [0,1,2,3,4,5,6]" :key="n">
-      <v-col v-if="this.bookingDefaults && calculateNthNextDay(n).isoWeekday() <= 5">
+      <v-col  :class="{days: true, monday: calculateNthNextDay(n).isoWeekday() === 1}" v-if="this.bookingDefaults && calculateNthNextDay(n).isoWeekday() <= 5">
+        <span id="nextWeek">Next Week</span>
         <availability-card
             v-if="this.bookingDefaults"
             :startOfDay="calculateNthNextDay(n)"
@@ -15,6 +16,38 @@
   </v-row>
 
 </template>
+<style>
+
+.days {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-block: 1em;
+}
+
+.monday {
+  border-left: 1px solid #585858;
+}
+
+.days:first-child {
+  border-left: 0 solid #585858;
+}
+
+
+#nextWeek, .days:first-child #nextWeek {
+  visibility: hidden;
+  display: block;
+  margin-bottom: 1em;
+}
+
+.monday #nextWeek {
+  visibility: visible;
+  font-size: 1em;
+  color: #585858;
+  line-height: 1;
+}
+
+</style>
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 import {mapActions, mapGetters, mapState} from "vuex";

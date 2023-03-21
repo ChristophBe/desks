@@ -20,7 +20,7 @@
   </v-row>
   <v-row>
     <v-col>
-      <v-window v-model="window">
+      <v-window v-model="window" :style="{marginTop: '-1em'}">
         <v-window-item v-for="(week,n) in weeks" :value="n" :key="n">
           <week-overview-window :start-of-week="week"  @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
         </v-window-item>
