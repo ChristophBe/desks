@@ -2,7 +2,7 @@
 
   <v-row>
     <template v-for="n in [0,1,2,3,4,5,6]" :key="n">
-      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: calculateNthNextDay(n).isoWeekday() === 1}" v-if="this.bookingDefaults && calculateNthNextDay(n).isoWeekday() <= 5">
+      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(calculateNthNextDay(n))}" v-if="this.bookingDefaults && !isWeekend(calculateNthNextDay(n))">
         <span id="dayNote" v-if="calculateNthNextDay(n).startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
         <span id="dayNote" v-else>KW {{calculateNthNextDay(n).isoWeek()}}</span>
         <availability-card
@@ -89,6 +89,15 @@ export default defineComponent({
 
     calculateNthNextDay(n: number): Moment {
       return moment(this.startOfWeek).add(n, "day")
+    },
+
+    isMonday(day: Moment) {
+      return day.isoWeekday() === 1;
+    },
+
+
+    isWeekend(day: Moment) {
+      return day.isoWeekday() > 5;
     },
 
     setDay(base:MomentInput, day: Moment): Moment{
