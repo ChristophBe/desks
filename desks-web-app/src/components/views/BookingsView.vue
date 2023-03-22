@@ -41,7 +41,6 @@
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-card variant="flat">
             <v-card-text v-if="myUpcomingBookings.length <= 0">
               <v-alert>
                 You have no upcoming desk bookings.
@@ -53,7 +52,6 @@
                 @editBooking="(booking) => openEditeBookingDialog(booking)"
                 @openBooking="(booking) => openShowBookingDialog(booking)"
             ></BookingsTable>
-          </v-card>
         </v-col>
       </v-row>
 

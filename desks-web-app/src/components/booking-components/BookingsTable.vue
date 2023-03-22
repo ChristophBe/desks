@@ -1,5 +1,41 @@
 <template>
-  <v-table>
+<v-row>
+  <v-col
+      v-for="item in [...bookings].sort(compareBookingsByTime)"
+      :key="item.id"
+    :style="{maxWidth: '478px'}">
+    <v-card
+        :variant="'flat'"
+    >
+      <template v-slot:append>
+        <v-btn icon elevation="0" >
+          <v-icon>mdi-dots-vertical</v-icon>
+          <booking-context-menu activator="parent" :booking="item" @edit="editBooking(item)"></booking-context-menu>
+        </v-btn>
+      </template>
+      <template v-slot:title v-if="dateConverter(item.start).startOf('day').isSame(moment().startOf('day'))">
+        Today
+      </template>
+      <template v-slot:title v-else-if="dateConverter(item.start).isSameOrBefore(dateConverter(item.start).add(1, 'week'))">
+        {{ dateConverter(item.start).format("dddd") }}
+      </template>
+      <template v-slot:title v-else>
+        {{ $format.date(item.start) }}
+      </template>
+      <template v-slot:subtitle>
+        {{ item.room.name }}
+      </template>
+
+
+      <v-card-text>
+
+         <v-chip>{{ $format.time(item.start) }} - {{ $format.time(item.end) }}</v-chip>
+
+      </v-card-text>
+    </v-card>
+  </v-col>
+</v-row>
+  <!-- <v-table>
     <thead>
     <tr>
       <th class="text-left w-33">
@@ -41,6 +77,7 @@
     </tr>
     </tbody>
   </v-table>
+-->
 </template>
 
 <script lang="ts">
@@ -49,6 +86,7 @@ import Booking from "@/models/Booking";
 import BookingContextMenu from "@/components/booking-components/BookingContextMenu.vue";
 import moment from "moment/moment";
 import {mapActions} from "vuex";
+import {Moment} from "moment";
 
 export default defineComponent({
   name: "BookingsTable",
@@ -58,9 +96,14 @@ export default defineComponent({
     bookings: Array
   },
   methods: {
-    ...mapActions("bookings", ["leaveEarly"]),
+    ...mapActions("bookings", ["leaveEarly", "deleteBooking"]),
     editBooking(booking: Booking) {
       this.$emit("editBooking", booking)
+    },
+    moment: () => moment(),
+    async onDelete() {
+      await this.deleteBooking(this.booking);
+      this.$emit("deleted")
     },
 
     compareBookingsByTime(a: Booking, b: Booking): number {
@@ -69,6 +112,18 @@ export default defineComponent({
 
     isOngoing(booking:Booking): boolean{
       return moment().isBetween(booking.start,booking.end)
+    },
+    dateConverter(d: Date): Moment {
+      return moment(d);
+    },
+    onEdite() {
+      this.$emit("edit")
+    },
+    isCurrentOrPastBooking(): boolean {
+      return moment(this.booking?.start).isBefore(moment.now())
+    },
+    isAllowedToEdit(): boolean {
+      return moment(this.booking?.end).isBefore(moment.now())
     }
   }
 
