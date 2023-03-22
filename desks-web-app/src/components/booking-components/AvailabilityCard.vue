@@ -4,12 +4,15 @@
           :disabled="isDisabled() || isLoading()"
           :color="calculateColor()"
           :variant="isDisabled() || isLoading() ?'flat':'tonal'"
+          :class="{today: startOfDay.isSame(today, 'days')}"
     >
     <template v-slot:append>
       <v-btn icon="mdi-plus" elevation="0" @click="$emit('addBooking')"></v-btn>
     </template>
     <template v-slot:title>
-      {{ startOfDay.isSame(today, "days") ? "Today" : startOfDay.format("dddd") }}
+      <span :class="{todayDot: startOfDay.isSame(today, 'days')}">
+      </span>
+      {{ startOfDay.format("dddd") }}
     </template>
     <template v-slot:subtitle>
       {{ $format.date(startOfDay)}}
@@ -33,6 +36,44 @@
     </v-card-text>
   </v-card>
 </template>
+<style scoped>
+
+.today {
+  border: 1px solid;
+}
+
+
+@keyframes blink {
+  from, to {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes blink {
+  from, to {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+
+.todayDot {
+  display: inline-block;
+  background-color: rgb(var(--v-theme-success));
+  height: 0.5em;
+  width: 0.5em;
+  margin: 0.1em;
+  border-radius: 100%;
+  -webkit-animation: blink 1.5s ease-in-out infinite;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+</style>
 
 <script lang="ts">
 
@@ -111,7 +152,3 @@ export default defineComponent({
   }
 });
 </script>
-
-<style scoped>
-
-</style>
