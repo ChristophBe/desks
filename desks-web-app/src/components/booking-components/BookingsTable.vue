@@ -1,9 +1,8 @@
 <template>
-<v-row>
+<v-row class="bookingsRow">
   <v-col
       v-for="item in [...bookings].sort(compareBookingsByTime)"
-      :key="item.id"
-    :style="{maxWidth: '478px'}">
+      :key="item.id">
     <v-card
         :variant="'flat'"
     >
@@ -35,49 +34,6 @@
     </v-card>
   </v-col>
 </v-row>
-  <!-- <v-table>
-    <thead>
-    <tr>
-      <th class="text-left w-33">
-        Room
-      </th>
-      <th class="text-left w-25">
-        Date
-      </th>
-      <th class="text-left">
-        Start
-      </th>
-      <th class="text-left">
-        End
-      </th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-
-    <tr
-        v-for="item in [...bookings].sort(compareBookingsByTime)"
-        :key="item.id"
-        @click="$emit('openBooking', item)"
-    >
-      <td>{{ item.room.name }}</td>
-      <td>{{ $format.date(item.start) }}</td>
-      <td>{{ $format.time(item.start) }}</td>
-      <td>{{ $format.time(item.end) }}</td>
-      <td class="d-flex justify-end align-center">
-        <v-btn v-if="isOngoing(item)" @click.stop.prevent="() => leaveEarly(item)" variant="flat">Leave now</v-btn>
-        <v-btn
-            icon
-            elevation="0"
-        >
-          <v-icon>mdi-dots-vertical</v-icon>
-          <booking-context-menu activator="parent" :booking="item" @edit="editBooking(item)"></booking-context-menu>
-        </v-btn>
-      </td>
-    </tr>
-    </tbody>
-  </v-table>
--->
 </template>
 
 <script lang="ts">
@@ -101,10 +57,6 @@ export default defineComponent({
       this.$emit("editBooking", booking)
     },
     moment: () => moment(),
-    async onDelete() {
-      await this.deleteBooking(this.booking);
-      this.$emit("deleted")
-    },
 
     compareBookingsByTime(a: Booking, b: Booking): number {
       return moment(a.start).diff(moment(b.start))
@@ -118,18 +70,18 @@ export default defineComponent({
     },
     onEdite() {
       this.$emit("edit")
-    },
-    isCurrentOrPastBooking(): boolean {
-      return moment(this.booking?.start).isBefore(moment.now())
-    },
-    isAllowedToEdit(): boolean {
-      return moment(this.booking?.end).isBefore(moment.now())
     }
   }
 
 })
 </script>
 
-<style scoped>
+<style>
 
+@media screen and (min-device-width: 970px) {
+  .bookingsRow {
+    min-width: 20%;
+    width: fit-content;
+  }
+}
 </style>
