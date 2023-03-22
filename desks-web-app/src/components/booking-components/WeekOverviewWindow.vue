@@ -34,17 +34,20 @@
 }
 
 
-#nextWeek, .days:first-child #nextWeek {
-  visibility: hidden;
-  display: block;
+#nextWeek {
+  display: none;
   margin-bottom: 1em;
-}
-
-.monday #nextWeek {
-  visibility: visible;
-  font-size: 1em;
   color: #585858;
   line-height: 1;
+  font-size: 1em;
+}
+
+.monday #nextWeek, .days:first-child #nextWeek {
+  display: block;
+}
+
+.days:first-child #nextWeek {
+    visibility: hidden;
 }
 
 </style>
