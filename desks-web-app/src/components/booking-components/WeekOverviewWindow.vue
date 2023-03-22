@@ -1,7 +1,7 @@
 <template>
 
   <v-row>
-    <template v-for="n in getNext5Weekdays()" :key="n">
+    <template v-for="n in getNext5Workingdays()" :key="n">
       <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
         <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
         <span id="dayNote" v-else>KW {{n.isoWeek()}}</span>
@@ -100,7 +100,7 @@ export default defineComponent({
       return day.isoWeekday() > 5;
     },
 
-    getNext5Weekdays(): Moment[] {
+    getNext5Workingdays(): Moment[] {
       const days = new Array<Moment>(7);
       for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
       return days.filter(d => !this.isWeekend(d));
