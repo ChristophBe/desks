@@ -1,15 +1,15 @@
 <template>
 
   <v-row>
-    <template v-for="n in [0,1,2,3,4,5,6]" :key="n">
-      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(calculateNthNextDay(n))}" v-if="this.bookingDefaults && !isWeekend(calculateNthNextDay(n))">
-        <span id="dayNote" v-if="calculateNthNextDay(n).startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
-        <span id="dayNote" v-else>KW {{calculateNthNextDay(n).isoWeek()}}</span>
+    <template v-for="n in getNext5Weekdays()" :key="n">
+      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
+        <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
+        <span id="dayNote" v-else>KW {{n.isoWeek()}}</span>
         <availability-card
             v-if="this.bookingDefaults"
-            :startOfDay="calculateNthNextDay(n)"
+            :startOfDay="n"
             :room="this.bookingDefaults.room"
-            @add-booking="bookForDay(calculateNthNextDay(n))"
+            @add-booking="bookForDay(n)"
         ></availability-card>
       </v-col>
     </template>
@@ -98,6 +98,12 @@ export default defineComponent({
 
     isWeekend(day: Moment) {
       return day.isoWeekday() > 5;
+    },
+
+    getNext5Weekdays(): Moment[] {
+      const days = new Array<Moment>(7);
+      for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
+      return days.filter(d => !this.isWeekend(d));
     },
 
     setDay(base:MomentInput, day: Moment): Moment{
