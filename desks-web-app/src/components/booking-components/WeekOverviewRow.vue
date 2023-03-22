@@ -7,7 +7,7 @@
       <h3 class="text-subtitle-1">{{$format.date(calculateNthDayOfWeek(1))}} - {{$format.date(calculateNthDayOfWeek(5))}} | {{bookingDefaults?.room?.name}}</h3>
     </v-col>
 
-    <v-col align-self="center" class="d-flex justify-end" :style="{width: 'fit-content', flexGrow: 0}">
+    <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
       <v-btn icon variant="text"
              @click="()=>previousWeek()"
              :disabled="isPreviousWeekDisabled()">
