@@ -20,11 +20,11 @@
   </v-row>
   <v-row>
     <v-col>
-      <v-window v-model="window" :style="{marginTop: '-1em'}">
-        <v-window-item v-for="(week,n) in weeks" :value="n" :key="n">
+      <v-slide-group v-model="window" :style="{marginTop: '-1em'}">
+        <v-slide-group-item v-for="(week,n) in weeks" :value="n" :key="n">
           <week-overview-window :start-of-week="week"  @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
-        </v-window-item>
-      </v-window>
+        </v-slide-group-item>
+      </v-slide-group>
     </v-col>
 
   </v-row>
@@ -48,16 +48,19 @@ export default defineComponent({
   components: {WeekOverviewWindow},
   data: (): DeskAvailabilityState => ({
     window: 0,
-    weeks: [moment().startOf("day"), moment().add(1, "week").day(1)],
+    weeks: [moment().startOf("day")],
     startOfWeek: moment().startOf("day")
   }),
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
+  mounted() {
+
+  },
   methods: {
     nextWeek() {
       if(this.window == this.weeks.length - 2){
-        const additionalWindow = moment(this.weeks[this.weeks.length-1]).add(1, "week")
+        const additionalWindow = this.getNext5Workingdays(moment(this.weeks[this.weeks.length-1]))[4].add(1, "days");
         this.weeks = [...this.weeks,additionalWindow]
       }
       this.window++
@@ -78,7 +81,18 @@ export default defineComponent({
     },
     calculateLastWeekdayOfPeriod(endOfPeriod: Moment): Moment {
       return endOfPeriod.isoWeekday() <= 5 ? endOfPeriod : endOfPeriod.isoWeekday(5);
-    }
+    },
+
+
+    isWeekend(day: Moment) {
+      return day.isoWeekday() > 5;
+    },
+
+    getNext5Workingdays(start: Moment): Moment[] {
+      const days = new Array<Moment>(7);
+      for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
+      return days.filter(d => !this.isWeekend(d));
+    },
 
   }
 });

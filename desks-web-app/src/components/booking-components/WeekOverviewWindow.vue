@@ -1,6 +1,4 @@
 <template>
-
-  <v-row>
     <template v-for="n in getNext5Workingdays()" :key="n">
       <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
         <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
@@ -12,10 +10,7 @@
             @add-booking="bookForDay(n)"
         ></availability-card>
       </v-col>
-    </template>
-
-  </v-row>
-
+  </template>
 </template>
 <style>
 
