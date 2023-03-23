@@ -76,7 +76,6 @@ export default defineComponent({
       days[0] = this.getNextWorkingDay(start);
       for(let i = 0; i < 5; i++) {
         days[i+1] = this.getNextWorkingDay(days[i]);
-        console.log(days[i+1])
       }
       return days;
     },
