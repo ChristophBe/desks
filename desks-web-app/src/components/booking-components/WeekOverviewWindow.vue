@@ -78,7 +78,7 @@ export default defineComponent({
   methods: {
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
-    ...mapActions("bookings", ["fetchBookingsByRoomAndWeek"]),
+    ...mapActions("bookings", ["fetchBookingsByRoomAndTimespan"]),
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
@@ -126,7 +126,7 @@ export default defineComponent({
 
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndWeek({roomId: this.bookingDefaults.room.id, date: this.startOfWeek})
+        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.startOfWeek, to: this.getNext5Workingdays()[4]})
       }
     },
   }

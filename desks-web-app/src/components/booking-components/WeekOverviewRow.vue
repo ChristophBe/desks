@@ -3,7 +3,7 @@
 
   <v-row class="mt-4">
     <v-col>
-      <h1 class="text-h4">{{ isPreviousWeekDisabled() ? "This Week" : "Week Overview" }}</h1>
+      <h1 class="text-h4">Next Days Overview</h1>
       <h3 class="text-subtitle-1">{{$format.date(calculateNthNextDay(0))}} - {{$format.date(calculateLastWeekdayOfPeriod(calculateNthNextDay(6)))}} | {{bookingDefaults?.room?.name}}</h3>
     </v-col>
 
@@ -47,29 +47,20 @@ export default defineComponent({
   name: 'desk-availability',
   components: {WeekOverviewWindow},
   data: (): DeskAvailabilityState => ({
-    window: 0,
-    weeks: [moment().startOf("day")],
+    window: -1,
+    weeks: [moment().startOf("day"), moment().isoWeekday(moment().startOf("day").isoWeekday() + 7).startOf("day")],
     startOfWeek: moment().startOf("day")
   }),
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
-  mounted() {
-
-  },
   methods: {
     nextWeek() {
-      if(this.window == this.weeks.length - 2){
-        const additionalWindow = this.getNext5Workingdays(moment(this.weeks[this.weeks.length-1]))[4].add(1, "days");
-        this.weeks = [...this.weeks,additionalWindow]
-      }
-      this.window++
-      this.startOfWeek = this.weeks[this.window]
+      const additionalWindow = (this.weeks[this.weeks.length-1]).isoWeekday((this.weeks[this.weeks.length-1]).isoWeekday() + 7).startOf("day")
+      this.weeks = [...this.weeks,additionalWindow]
     },
     previousWeek() {
-      this.window--
       this.startOfWeek = this.weeks[this.window]
-
     },
     isPreviousWeekDisabled(): boolean {
       return this.window <= 0
@@ -83,17 +74,23 @@ export default defineComponent({
       return endOfPeriod.isoWeekday() <= 5 ? endOfPeriod : endOfPeriod.isoWeekday(5);
     },
 
-
-    isWeekend(day: Moment) {
-      return day.isoWeekday() > 5;
-    },
-
     getNext5Workingdays(start: Moment): Moment[] {
-      const days = new Array<Moment>(7);
-      for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
-      return days.filter(d => !this.isWeekend(d));
+      const days = new Array<Moment>(5);
+      days[0] = this.getNextWorkingDay(start);
+      for(var i = 0; i < 5; i++) {
+        days[i+1] = this.getNextWorkingDay(days[i]);
+      }
+      return days;
     },
 
+    getNextWorkingDay(d: Moment) {
+      const isoWeekday = d.isoWeekday();
+      if(isoWeekday >= 5) {
+        return d.isoWeekday(1);
+      } else {
+        return d.isoWeekday(isoWeekday + 1);
+      }
+    }
   }
 });
 </script>
