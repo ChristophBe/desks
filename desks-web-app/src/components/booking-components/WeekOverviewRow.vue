@@ -4,8 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">Next Days Overview</h1>
-      <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} -
-        {{ $format.date(getNext5WorkingDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
+      <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} - {{ $format.date(getNext5WorkingDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -21,7 +20,7 @@
   </v-row>
   <v-row>
     <v-col>
-      <v-window v-model="window" :style="{marginTop: '-1em'}">
+      <v-window v-model="window">
         <v-window-item v-for="(week,n) in weeks" :value="n" :key="n">
           <week-overview-window :start-of-week="week"  @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
         </v-window-item>
