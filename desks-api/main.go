@@ -22,7 +22,9 @@ func main() {
 	ctx := context.Background()
 	services.NewAutomaticUserDataCleanupService().InitAutomaticUserDataCleaner(ctx)
 
-	router := initRouter()
+	oicdService := services.NewOICDService(ctx)
+
+	router := initRouter(oicdService)
 	httpRequestHandler := middlewares.CorsMiddleware(router)
 	httpRequestHandler = middlewares.LoggingMiddleware(httpRequestHandler)
 	httpRequestHandler = middlewares.TrimTrailingSlashMiddleware(httpRequestHandler)
@@ -36,11 +38,13 @@ func main() {
 	}
 }
 
-func initRouter() *mux.Router {
+func initRouter(oicdService services.OICDService) *mux.Router {
 	urlPrefix := "/api/v1.0"
 	router := mux.NewRouter()
-	router.Path("/auth/login").HandlerFunc(handlers.AuthLogin).Methods(http.MethodGet)
-	router.Path("/auth/token").HandlerFunc(handlers.AuthRedirect).Methods(http.MethodGet)
+
+	authHandlers := handlers.NewAuthHandlers(oicdService)
+	router.Path("/auth/login").HandlerFunc(authHandlers.Redirect).Methods(http.MethodGet)
+	router.Path("/auth/token").HandlerFunc(authHandlers.Callback).Methods(http.MethodGet)
 
 	router.Path(urlPrefix + "/users/me").Handler(withAuth(handlers.GetUsersMe)).Methods(http.MethodGet)
 
@@ -80,4 +84,5 @@ func initDefaultConfigurations() {
 	configuration.RegisterStringConfiguration(configuration.OauthTokenUrl)
 	configuration.RegisterStringConfiguration(configuration.OauthAuthorizationUrl)
 	configuration.RegisterStringConfiguration(configuration.OauthUserinfoUrl)
+	configuration.RegisterStringConfiguration(configuration.OICDIssuerUrl)
 }

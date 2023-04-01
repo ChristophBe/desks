@@ -1,111 +1,70 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/ChristophBe/desks/desks-api/data"
 	"github.com/ChristophBe/desks/desks-api/models"
 	"github.com/ChristophBe/desks/desks-api/services"
 	"github.com/ChristophBe/desks/desks-api/util"
 	"github.com/ChristophBe/desks/desks-api/util/configuration"
-	"golang.org/x/oauth2"
 	"net/http"
 )
 
-type OpenIdUserInfo struct {
-	Sub        string `json:"sub"`
-	Name       string `json:"name"`
-	FamilyName string `json:"family_name"`
-	GivenName  string `json:"given_name"`
+type AuthHandlers interface {
+	Redirect(writer http.ResponseWriter, request *http.Request)
+	Callback(writer http.ResponseWriter, request *http.Request)
 }
 
-type OauthState struct {
-	RedirectUrl string `json:"redirectUrl"`
+type authHandlersImpl struct {
+	oicdService services.OICDService
 }
 
-func getOauthConfig() (oauthConfig *oauth2.Config, err error) {
-	return &oauth2.Config{
-		ClientID:     configuration.OauthClientId.GetValue(),
-		ClientSecret: configuration.OauthClientSecret.GetValue(),
-		Scopes:       []string{"openid"},
-		RedirectURL:  fmt.Sprintf("%s/auth/token/", configuration.BaseUrl.GetValue()),
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  configuration.OauthAuthorizationUrl.GetValue(),
-			TokenURL: configuration.OauthTokenUrl.GetValue(),
-		},
-	}, nil
+func (a authHandlersImpl) Redirect(writer http.ResponseWriter, request *http.Request) {
 
-}
-func AuthLogin(writer http.ResponseWriter, request *http.Request) {
-
-	conf, err := getOauthConfig()
-	if err != nil {
-		err = util.InternalServerError(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
-
-	// Redirect user to consent page to ask for permission
-	// for the scopes specified above.
-	url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	state := ""
+	url := a.oicdService.GetRedirectUrl(state)
 
 	http.Redirect(writer, request, url, http.StatusTemporaryRedirect)
-
 }
 
-func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
+func (a authHandlersImpl) Callback(writer http.ResponseWriter, request *http.Request) {
 
 	ctx := request.Context()
-	conf, err := getOauthConfig()
-	if err != nil {
-		err = util.InternalServerError(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-	}
+	//state := request.URL.Query().Get("state")
 
-	code := request.URL.Query().Get("code")
-	if code == "" {
+	// Verify state.
+
+	idToken, err := a.oicdService.GetIdToken(ctx, request.URL.Query().Get("code"))
+
+	if err != nil {
 		err := util.Unauthorized(nil)
 		util.ErrorResponseWriter(err, writer, request)
 		return
 	}
-	tok, err := conf.Exchange(ctx, code, oauth2.AccessTypeOffline)
-	if err != nil {
 
-		err = util.Unauthorized(err)
+	// Extract custom claims.
+	var claims struct {
+		Email      string `json:"email"`
+		Verified   bool   `json:"email_verified"`
+		FamilyName string `json:"family_name"`
+		GivenName  string `json:"given_name"`
+	}
+	if err := idToken.Claims(&claims); err != nil {
+		err := util.Unauthorized(nil)
 		util.ErrorResponseWriter(err, writer, request)
 		return
-	}
-
-	userInfoUrl := configuration.OauthUserinfoUrl.GetValue()
-
-	client := conf.Client(ctx, tok)
-	resp, err := client.Get(userInfoUrl)
-	if err != nil {
-		err = util.Unauthorized(err)
-		util.ErrorResponseWriter(err, writer, request)
-		return
-
-	}
-	var userInfo OpenIdUserInfo
-	err = json.NewDecoder(resp.Body).Decode(&userInfo)
-
-	if err != nil {
-		err = util.Unauthorized(err)
-		util.ErrorResponseWriter(err, writer, request)
 	}
 
 	userRepository := data.NewUserRepository()
 
-	user, err := userRepository.FindByExternalUserID(request.Context(), userInfo.Sub)
+	user, err := userRepository.FindByExternalUserID(request.Context(), idToken.Subject)
 
 	if err != nil {
 		user = models.User{}
 	}
 
-	user.ExternalUserId = userInfo.Sub
-	user.FamilyName = userInfo.FamilyName
-	user.GivenName = userInfo.GivenName
+	user.ExternalUserId = idToken.Subject
+	user.FamilyName = claims.FamilyName
+	user.GivenName = claims.GivenName
 
 	if user, err = userRepository.Save(request.Context(), user); err != nil {
 		util.ErrorResponseWriter(util.InternalServerError(err), writer, request)
@@ -120,4 +79,8 @@ func AuthRedirect(writer http.ResponseWriter, request *http.Request) {
 	baseUrl := configuration.BaseUrl.GetValue()
 
 	http.Redirect(writer, request, baseUrl, http.StatusTemporaryRedirect)
+}
+
+func NewAuthHandlers(oicdService services.OICDService) AuthHandlers {
+	return &authHandlersImpl{oicdService: oicdService}
 }
