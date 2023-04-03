@@ -4,7 +4,7 @@
     <template v-for="n in getNext5WorkingDays()" :key="n">
       <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
         <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
-        <span id="dayNote" v-else>KW {{n.isoWeek()}}</span>
+        <span id="dayNote" v-else>Week {{n.isoWeek()}}</span>
         <availability-card
             v-if="this.bookingDefaults"
             :startOfDay="n"
