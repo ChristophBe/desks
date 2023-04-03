@@ -12,24 +12,70 @@ interface RoomAndDate {
     roomId: Room["id"]
     date: MomentInput
 }
-interface SetBookingsPayload extends RoomAndDate {
-    bookings: Array<Booking>
+interface RoomAndRange{
+    roomId: Room["id"]
+    from: MomentInput
+    to: MomentInput
+}
+
+type LoadingState = "loading" | "loaded";
+
+class Range{
+
+    public readonly from: Moment
+    public readonly to: Moment
+
+    constructor(from: MomentInput, to: MomentInput){
+        if (moment(from).isAfter(to)){
+            throw "invalid range"
+        }
+        this.from = moment(from)
+        this.to = moment(to)
+    }
+
+    public isInRange(t: MomentInput):boolean {
+        const other =  moment(t)
+        const result = other.isBetween(this.from,this.to, "seconds","[]")
+        console.log("isInRange",other.toISOString(), this.from.toISOString(),this.to.toISOString(), result)
+
+        return result
+    }
+    public isSubrangeOrEqual(other :Range): boolean{
+        return this.isInRange(other.from) && this.isInRange(other.to)
+    }
+}
+class BookingRangeLoadingState extends Range{
+
+    public readonly state: LoadingState;
+    public readonly roomId: Room['id'];
+
+    constructor(from: MomentInput, to: MomentInput, roomId: Room['id'], state: LoadingState){
+        super(from, to)
+        this.roomId = roomId
+        this.state = state
+    }
+
+    public isState(state: LoadingState): boolean{
+        return this.state === state
+    }
+
+    public identifier() {
+        return `${this.roomId}-${this.from.toISOString()}-${this.to.toISOString()}`;
+    }
 }
 
 export interface BookingsState {
     loadingMyBookings: boolean
     myBookingsFetched: boolean
     bookings: Array<Booking>
-    loadingByRoomAndDate: Map<string, boolean>
-    loadingByRoomAndWeek: Map<string, boolean>
+    loadingStates:Map<string, BookingRangeLoadingState>
 }
 
 const state: BookingsState = {
     loadingMyBookings: false,
     myBookingsFetched: true,
     bookings: [],
-    loadingByRoomAndDate: new Map<string, boolean>(),
-    loadingByRoomAndWeek: new Map<string, boolean>()
+    loadingStates: new Map<string,BookingRangeLoadingState>()
 }
 
 function mergeBooking(bookings: Array<Booking>, bookingsToUpdate: Array<Booking>): Array<Booking> {
@@ -49,27 +95,22 @@ const mutations: MutationTree<BookingsState> = {
         state.loadingMyBookings = false
         state.myBookingsFetched = true
     },
-    setBookings(state: BookingsState, {bookings, roomId, date}: SetBookingsPayload) {
+    setBookings(state: BookingsState, bookings: Array<Booking>) {
         state.bookings = mergeBooking(state.bookings, bookings)
-
-        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, false)
-
     },
-    setBookingsForWeek(state: BookingsState, {bookings, roomId, date}: SetBookingsPayload) {
-        state.bookings = mergeBooking(state.bookings, bookings)
-
-        state.loadingByRoomAndWeek.set(`${roomId}-${moment(date).format('YYYY-MM-DD')}`, false)
-
-    },
-    loadingForRoomAndDate(state: BookingsState, {roomId, date}: RoomAndDate) {
-        state.loadingByRoomAndDate.set(`${roomId}-${moment(date).startOf("week").format('YYYY-MM-DD')}`, true)
-    },
-    loadingForRoomAndWeek(state: BookingsState, {roomId, date}: RoomAndDate) {
-        state.loadingByRoomAndWeek.set(`${roomId}-${moment(date).startOf("week").format('YYYY-MM-DD')}`, true)
+    setLoadingRange(state: BookingsState, loadingState: BookingRangeLoadingState){
+        state.loadingStates = new Map<string, BookingRangeLoadingState>(state.loadingStates.set(loadingState.identifier(), loadingState))
     },
     removeBooking(state: BookingsState, idToRemove: Booking['id']) {
         state.bookings = state.bookings.filter(booking => booking.id !== idToRemove)
     }
+}
+
+function isLoadingBookingsByRoomAndRange(loadingStates: Array<BookingRangeLoadingState>, roomId: Room["id"], range: Range): boolean {
+    return loadingStates
+        .filter(r => r.roomId === roomId)
+        .filter(r => r.isState("loading"))
+        .some(r => r.isSubrangeOrEqual(range))
 }
 
 const getters: GetterTree<BookingsState, RootState> = {
@@ -89,23 +130,34 @@ const getters: GetterTree<BookingsState, RootState> = {
         }
     },
     isLoadingBookingsByRoomAndDay(state: BookingsState) {
+
+
         return (roomId?: Room["id"], date?: MomentInput) => {
-            if (!roomId && !date) {
+            if (!roomId || !date) {
                 return false
+
             }
-            const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
-            const weekKey = `${roomId}-${moment(date).startOf('week').format('YYYY-MM-DD')}`
-            return (state.loadingByRoomAndDate.has(key) && state.loadingByRoomAndDate.get(key))
-              || (state.loadingByRoomAndWeek.has(weekKey) && state.loadingByRoomAndWeek.get(weekKey))
+            const range = new Range(moment(date).startOf("day"), moment(date).endOf("day"))
+            return isLoadingBookingsByRoomAndRange([...state.loadingStates.values()], roomId, range)
         }
     },
+
     isLoadingBookingsByRoomAndWeek(state: BookingsState) {
         return (roomId?: Room["id"], date?: MomentInput) => {
-            if (!roomId && !date) {
+            if (!roomId || !date) {
                 return false
             }
-            const key = `${roomId}-${moment(date).format('YYYY-MM-DD')}`
-            return state.loadingByRoomAndWeek.has(key) && state.loadingByRoomAndWeek.get(key)
+            const range = new Range(moment(date).startOf("week"), moment(date).endOf("week"))
+            return isLoadingBookingsByRoomAndRange([...state.loadingStates.values()], roomId, range)
+        }
+    },
+    isLoadingBookingsByRoomAndRange(state: BookingsState) {
+        return (roomId?: Room["id"], from?: MomentInput, to?: MomentInput) => {
+            if (!roomId || !from || !to) {
+                return false
+            }
+            const range = new Range(from,to)
+            return isLoadingBookingsByRoomAndRange([...state.loadingStates.values()], roomId, range)
         }
     },
     myBookings(state: BookingsState, _, rootState: RootState): Array<Booking> {
@@ -151,50 +203,55 @@ const actions: ActionTree<BookingsState, RootState> = {
         }
 
     },
-    async fetchBookingsByRoomAndDate({commit, getters}: ActionContext<BookingsState, RootState>, {
-        roomId,
-        date
-    }: RoomAndDate) {
-        console.log("load bookings for room and day")
-        if (!roomId || !date || getters.isLoadingBookingsByRoomAndDay(roomId, date)) {
-            return
-        }
-        commit("loadingForRoomAndDate", {roomId: roomId, date: date})
-        const dateString = moment(date).format('YYYY-MM-DD')
-        const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?date=${dateString}`)
-        if (res.status >= 400) {
-            console.log(`Failed to fetch bookings for room ${roomId} on ${dateString} `)
-            return
-        }
-        try {
-            const bookings: Array<Booking> = await res.json()
-            commit("setBookings", {bookings: bookings, roomId: roomId, date: date})
-        } catch (e) {
-            console.log(`Failed to fetch bookings for room ${roomId} on ${dateString} `, e)
-        }
-    },
-    async fetchBookingsByRoomAndWeek({commit, getters}: ActionContext<BookingsState, RootState>, {
+    async fetchBookingsByRoomAndDate({dispatch}: ActionContext<BookingsState, RootState>, {
         roomId,
         date,
     }: RoomAndDate) {
+        return dispatch("fetchBookingsForRange", {
+            roomId: roomId,
+            from: moment(date).startOf("day"),
+            to: moment(date).endOf("day")
+        })
+    },
+    async fetchBookingsByRoomAndWeek({dispatch}: ActionContext<BookingsState, RootState>, {
+        roomId,
+        date,
+    }: RoomAndDate) {
+        return dispatch("fetchBookingsForRange", {
+            roomId: roomId,
+            from: moment(date).startOf("week"),
+            to: moment(date).endOf("week")
+        })
+    },
 
-        if (!roomId || !date || getters.isLoadingBookingsByRoomAndWeek(roomId, date)) {
+    async fetchBookingsForRange({commit, getters}: ActionContext<BookingsState, RootState>, {
+        roomId,
+        from, to,
+    }: RoomAndRange) {
+
+        if (!roomId || !from || !to || getters.isLoadingBookingsByRoomAndRange(roomId, from, to)) {
             return
         }
-        commit("loadingForRoomAndWeek", {roomId: roomId, date: date})
-        const from = moment(date).startOf("week").toISOString()
-        const to = moment(date).endOf("week").toISOString()
+
+        const loadingState = new BookingRangeLoadingState(from,to,roomId, "loading")
+
+        commit("setLoadingRange", loadingState)
+        const fromString = moment(from).toISOString()
+        const toString = moment(to).toISOString()
 
 
-        console.log(`fetch bookings for room ${roomId} from ${from} to ${to}`)
-        const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?from=${from}&to=${to}`)
+        console.log(`fetch bookings for room ${roomId} from ${fromString} to ${toString}`)
+        const res = await fetch(`/api/v1.0/rooms/${roomId}/bookings?from=${fromString}&to=${toString}`)
         if (res.status >= 400) {
-            console.log(`Failed to fetch bookings for room ${roomId} from ${from} to ${to}`)
+            console.log(`Failed to fetch bookings for room ${roomId} from ${fromString} to ${toString}`)
             return
         }
         try {
             const bookings: Array<Booking> = await res.json()
-            commit("setBookingsForWeek", {bookings: bookings, roomId: roomId, date: date})
+
+            console.log(`Received ${bookings.length} bookings for room ${roomId} from ${fromString} to ${toString}`)
+            commit("setBookings", bookings)
+            commit("setLoadingRange", new BookingRangeLoadingState(from,to,roomId, "loaded"))
         } catch (e) {
             console.log(`Failed to fetch bookings for room ${roomId} from ${from} to ${to}`, e)
         }
