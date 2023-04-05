@@ -3,7 +3,7 @@
 
   <v-row class="mt-4">
     <v-col>
-      <h1 class="text-h4">Next Days Overview</h1>
+      <h1 class="text-h4">Desk Availability</h1>
       <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} - {{ $format.date(getNext5WorkingDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
