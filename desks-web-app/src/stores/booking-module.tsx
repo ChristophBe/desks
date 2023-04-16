@@ -36,8 +36,6 @@ class Range{
     public isInRange(t: MomentInput):boolean {
         const other =  moment(t)
         const result = other.isBetween(this.from,this.to, "seconds","[]")
-        console.log("isInRange",other.toISOString(), this.from.toISOString(),this.to.toISOString(), result)
-
         return result
     }
     public isSubrangeOrEqual(other :Range): boolean{

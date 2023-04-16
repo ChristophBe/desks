@@ -2,7 +2,7 @@
   <v-expand-transition>
     <v-alert v-if="room && date"
              density="comfortable"
-             :type="calculateType(overlappingBookings,room.capacity)"
+             :type="calculateColor(overlappingBookings,room.capacity)"
              variant="text"
              class="mb-2"
     >
