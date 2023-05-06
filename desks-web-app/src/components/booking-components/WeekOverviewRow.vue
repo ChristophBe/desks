@@ -4,7 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">Desk Availability</h1>
-      <h3 class="text-subtitle-1">{{ $format.date(dateRanges[window][0]) }} - {{ $format.date(dateRanges[window][4]) }} | {{ bookingDefaults?.room?.name }}</h3>
+      <h3 class="text-subtitle-1">{{ $format.date(getFirstDayInRange(dateRanges[window])) }} - {{ $format.date(getLastDayInRange(dateRanges[window])) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -52,13 +52,13 @@ export default defineComponent({
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
-  created() {
-    this.addDateRange(moment().startOf("day")) // init first range
+  beforeMount() {
+    this.addDateRange(moment()) // init first range
     this.addNextDateRange() // add next range
   },
   methods: {
     addNextDateRange() {
-      const additionalWindow = (this.dateRanges[this.window][4]).add(1, "day").startOf("day")
+      const additionalWindow = moment(this.getLastDayInRange(this.dateRanges[this.dateRanges.length - 1])).add(1, "day").startOf("day")
       this.addDateRange(additionalWindow)
     },
     nextDateRange() {
@@ -74,15 +74,19 @@ export default defineComponent({
     isPreviousWeekDisabled(): boolean {
       return this.window <= 0
     },
-
-    isWeekend(day: Moment) {
-      return day.isoWeekday() > 5;
+    isBusinessDay(day: Moment) {
+      return day.isoWeekday() <= 5;
     },
-
+    getLastDayInRange(range: Moment[]): Moment {
+      return range[range.length - 1];
+    },
+    getFirstDayInRange(range: Moment[]): Moment {
+      return range[0];
+    },
     getNext5BusinessDays(start: moment.Moment): Moment[] {
       const days = new Array<Moment>(7);
-      for(var i = 0; i < 7; i++) days[i] = moment(start).add(i, "day")
-      return days.filter(d => !this.isWeekend(d));
+      for(let i = 0; i < 7; i++) days[i] = moment(start).startOf("day").add(i, "day");
+      return days.filter(d => this.isBusinessDay(d));
     }
   }
 });
