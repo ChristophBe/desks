@@ -53,8 +53,8 @@ export default defineComponent({
     ...mapState("defaults",["bookingDefaults"])
   },
   created() {
-    this.addDateRange(moment().startOf("day"))
-    this.addNextDateRange()
+    this.addDateRange(moment().startOf("day")) // init first range
+    this.addNextDateRange() // add next range
   },
   methods: {
     addNextDateRange() {
