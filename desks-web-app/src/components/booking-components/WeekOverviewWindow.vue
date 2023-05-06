@@ -1,15 +1,15 @@
 <template>
 
   <v-row>
-    <template v-for="n in getNext5BusinessDays()" :key="n">
-      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
-        <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
-        <span id="dayNote" v-else>Week {{n.isoWeek()}}</span>
+    <template v-for="businessDay in getNext5BusinessDays()" :key="businessDay">
+      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(businessDay)}" v-if="this.bookingDefaults">
+        <span id="dayNote" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
+        <span id="dayNote" v-else>Week {{businessDay.isoWeek()}}</span>
         <availability-card
             v-if="this.bookingDefaults"
-            :startOfDay="n"
+            :startOfDay="businessDay"
             :room="this.bookingDefaults.room"
-            @add-booking="bookForDay(n)"
+            @add-booking="bookForDay(businessDay)"
         ></availability-card>
       </v-col>
     </template>
