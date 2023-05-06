@@ -71,9 +71,10 @@ export default defineComponent({
     ...mapState('user', ['user']),
     today: () => moment(),
   },
-  async mounted() {
-    await this.fetchBookingDefaults()
-    await this.fetchBookings()
+
+  mounted() {
+    this.fetchBookingDefaults()
+    this.fetchBookings()
   },
   watch: {
     async bookingDefaults() {

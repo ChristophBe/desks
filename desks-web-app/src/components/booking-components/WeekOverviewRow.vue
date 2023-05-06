@@ -4,16 +4,16 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">Desk Availability</h1>
-      <h3 class="text-subtitle-1">{{ $format.date(getNext5BusinessDays(startOfWeek)[0]) }} - {{ $format.date(getNext5BusinessDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
+      <h3 class="text-subtitle-1">{{ $format.date(dateRanges[window][0]) }} - {{ $format.date(dateRanges[window][4]) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
       <v-btn icon variant="text"
-             @click="()=>previousWeek()"
+             @click="()=>previousDateRange()"
              :disabled="isPreviousWeekDisabled()">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <v-btn icon variant="text" @click="()=>nextWeek()">
+      <v-btn icon variant="text" @click="()=>nextDateRange()">
         <v-icon>mdi-arrow-right</v-icon>
       </v-btn>
     </v-col>
@@ -21,8 +21,8 @@
   <v-row>
     <v-col>
       <v-window v-model="window">
-        <v-window-item v-for="(week,n) in weeks" :value="n" :key="n">
-          <week-overview-window :dateScope="getNext5BusinessDays(week)" @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
+        <v-window-item v-for="(scope,n) in dateRanges" :value="n" :key="n">
+          <week-overview-window :dateScope="scope" @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
         </v-window-item>
       </v-window>
     </v-col>
@@ -38,8 +38,7 @@ import WeekOverviewWindow from "@/components/booking-components/WeekOverviewWind
 import {mapState} from "vuex";
 
 interface DeskAvailabilityState {
-  startOfWeek: Moment
-  weeks: Moment[]
+  dateRanges: Moment[][]
   window: number
 }
 
@@ -48,30 +47,29 @@ export default defineComponent({
   components: {WeekOverviewWindow},
   data: (): DeskAvailabilityState => ({
     window: 0,
-    weeks: [moment().startOf("day"), moment().startOf("day")],
-    startOfWeek: moment().startOf("day")
+    dateRanges: []
   }),
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
-  mounted() {
-    this.addNextWeek()
+  created() {
+    this.addDateRange(moment().startOf("day"))
+    this.addNextDateRange()
   },
   methods: {
-    addNextWeek() {
-      const additionalWindow = (this.weeks[this.weeks.length-1]).add(1, "week").startOf("day")
-      this.weeks = [...this.weeks,additionalWindow]
+    addNextDateRange() {
+      const additionalWindow = (this.dateRanges[this.window][4]).add(1, "day").startOf("day")
+      this.addDateRange(additionalWindow)
     },
-    nextWeek() {
-      if(this.window >= this.weeks.length - 2){
-        this.addNextWeek();
-      }
+    nextDateRange() {
+        this.addNextDateRange();
       this.window++
-      this.startOfWeek = this.weeks[this.window]
     },
-    previousWeek() {
+    addDateRange(firstDate: Moment) {
+      this.dateRanges.push(this.getNext5BusinessDays(firstDate));
+    },
+    previousDateRange() {
       this.window--
-      this.startOfWeek = this.weeks[this.window]
     },
     isPreviousWeekDisabled(): boolean {
       return this.window <= 0
