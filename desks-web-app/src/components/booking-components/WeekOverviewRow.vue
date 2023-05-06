@@ -4,7 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">Desk Availability</h1>
-      <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} - {{ $format.date(getNext5BusinessDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
+      <h3 class="text-subtitle-1">{{ $format.date(getNext5BusinessDays(startOfWeek)[0]) }} - {{ $format.date(getNext5BusinessDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -22,7 +22,7 @@
     <v-col>
       <v-window v-model="window">
         <v-window-item v-for="(week,n) in weeks" :value="n" :key="n">
-          <week-overview-window :start-of-week="week"  @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
+          <week-overview-window :dateScope="getNext5BusinessDays(week)" @add-booking="(booking) => $emit('book', booking)"></week-overview-window>
         </v-window-item>
       </v-window>
     </v-col>
@@ -48,17 +48,23 @@ export default defineComponent({
   components: {WeekOverviewWindow},
   data: (): DeskAvailabilityState => ({
     window: 0,
-    weeks: [moment().startOf("day"), moment().add(6, "days").startOf("day")],
+    weeks: [moment().startOf("day"), moment().startOf("day")],
     startOfWeek: moment().startOf("day")
   }),
   computed:{
     ...mapState("defaults",["bookingDefaults"])
   },
+  mounted() {
+    this.addNextWeek()
+  },
   methods: {
+    addNextWeek() {
+      const additionalWindow = (this.weeks[this.weeks.length-1]).add(1, "week").startOf("day")
+      this.weeks = [...this.weeks,additionalWindow]
+    },
     nextWeek() {
-      if(this.window == this.weeks.length - 2){
-        const additionalWindow = (this.weeks[this.weeks.length-1]).isoWeekday((this.weeks[this.weeks.length-1]).isoWeekday()).startOf("day")
-        this.weeks = [...this.weeks,additionalWindow]
+      if(this.window >= this.weeks.length - 2){
+        this.addNextWeek();
       }
       this.window++
       this.startOfWeek = this.weeks[this.window]
@@ -70,22 +76,15 @@ export default defineComponent({
     isPreviousWeekDisabled(): boolean {
       return this.window <= 0
     },
-    getNext5BusinessDays(start: Moment): Moment[] {
-      const days = new Array<Moment>(5);
-      days[0] = this.getNextBusinessDay(start);
-      for(let i = 0; i < 5; i++) {
-        days[i+1] = this.getNextBusinessDay(days[i]);
-      }
-      return days;
+
+    isWeekend(day: Moment) {
+      return day.isoWeekday() > 5;
     },
 
-    getNextBusinessDay(d: Moment) {
-      const isoWeekday = d.isoWeekday();
-      if(isoWeekday >= 5) {
-        return d.isoWeekday(1);
-      } else {
-        return d.isoWeekday(isoWeekday + 1);
-      }
+    getNext5BusinessDays(start: moment.Moment): Moment[] {
+      const days = new Array<Moment>(7);
+      for(var i = 0; i < 7; i++) days[i] = moment(start).add(i, "day")
+      return days.filter(d => !this.isWeekend(d));
     }
   }
 });

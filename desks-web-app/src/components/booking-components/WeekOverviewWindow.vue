@@ -1,7 +1,7 @@
 <template>
 
   <v-row>
-    <template v-for="businessDay in getNext5BusinessDays()" :key="businessDay">
+    <template v-for="businessDay in dateScope" :key="businessDay">
       <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(businessDay)}" v-if="this.bookingDefaults">
         <span id="dayNote" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
         <span id="dayNote" v-else>Week {{businessDay.isoWeek()}}</span>
@@ -57,10 +57,10 @@ import AvailabilityCard from "@/components/booking-components/AvailabilityCard.v
 export default defineComponent({
   name: 'weekOverviewWindow',
   props:{
-    startOfWeek: {
-      type: Object as PropType<MomentInput>,
+    dateScope: {
+      type: Object as PropType<Moment[]>,
       required: true
-    },
+    }
   },
   components: {AvailabilityCard},
 
@@ -87,23 +87,8 @@ export default defineComponent({
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
-    calculateNthNextDay(n: number): Moment {
-      return moment(this.startOfWeek).add(n, "day")
-    },
-
     isMonday(day: Moment) {
       return day.isoWeekday() === 1;
-    },
-
-
-    isWeekend(day: Moment) {
-      return day.isoWeekday() > 5;
-    },
-
-    getNext5BusinessDays(): Moment[] {
-      const days = new Array<Moment>(7);
-      for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
-      return days.filter(d => !this.isWeekend(d));
     },
 
     setDay(base:MomentInput, day: Moment): Moment{
@@ -131,7 +116,7 @@ export default defineComponent({
 
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.startOfWeek, to: this.getNext5BusinessDays()[4]})
+        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.dateScope[0], to: this.dateScope[4]})
       }
     },
   }
