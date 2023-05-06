@@ -4,7 +4,7 @@
   <v-row class="mt-4">
     <v-col>
       <h1 class="text-h4">Desk Availability</h1>
-      <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} - {{ $format.date(getNext5WorkingDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
+      <h3 class="text-subtitle-1">{{ $format.date(startOfWeek) }} - {{ $format.date(getNext5BusinessDays(startOfWeek)[4]) }} | {{ bookingDefaults?.room?.name }}</h3>
     </v-col>
 
     <v-col align-self="center" class="d-flex justify-end flex-grow-0" :style="{width: 'fit-content'}">
@@ -70,16 +70,16 @@ export default defineComponent({
     isPreviousWeekDisabled(): boolean {
       return this.window <= 0
     },
-    getNext5WorkingDays(start: Moment): Moment[] {
+    getNext5BusinessDays(start: Moment): Moment[] {
       const days = new Array<Moment>(5);
-      days[0] = this.getNextWorkingDay(start);
+      days[0] = this.getNextBusinessDay(start);
       for(let i = 0; i < 5; i++) {
-        days[i+1] = this.getNextWorkingDay(days[i]);
+        days[i+1] = this.getNextBusinessDay(days[i]);
       }
       return days;
     },
 
-    getNextWorkingDay(d: Moment) {
+    getNextBusinessDay(d: Moment) {
       const isoWeekday = d.isoWeekday();
       if(isoWeekday >= 5) {
         return d.isoWeekday(1);

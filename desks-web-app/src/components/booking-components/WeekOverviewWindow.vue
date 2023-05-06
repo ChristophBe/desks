@@ -1,7 +1,7 @@
 <template>
 
   <v-row>
-    <template v-for="n in getNext5WorkingDays()" :key="n">
+    <template v-for="n in getNext5BusinessDays()" :key="n">
       <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(n)}" v-if="this.bookingDefaults">
         <span id="dayNote" v-if="n.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
         <span id="dayNote" v-else>Week {{n.isoWeek()}}</span>
@@ -100,7 +100,7 @@ export default defineComponent({
       return day.isoWeekday() > 5;
     },
 
-    getNext5WorkingDays(): Moment[] {
+    getNext5BusinessDays(): Moment[] {
       const days = new Array<Moment>(7);
       for(var i = 0; i < 7; i++) days[i] = this.calculateNthNextDay(i);
       return days.filter(d => !this.isWeekend(d));
@@ -131,7 +131,7 @@ export default defineComponent({
 
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.startOfWeek, to: this.getNext5WorkingDays()[4]})
+        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.startOfWeek, to: this.getNext5BusinessDays()[4]})
       }
     },
   }
