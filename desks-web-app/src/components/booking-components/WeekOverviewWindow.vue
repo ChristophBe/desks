@@ -24,18 +24,18 @@
 }
 
 .monday {
-  border-left: 1px solid #585858;
+  border-left: 1px solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
 .days:first-child {
-  border-left: 0 solid #585858;
+  border-left: 0 solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
 
 #dayNote {
   display: none;
   margin-bottom: 1em;
-  color: #585858;
+  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
   line-height: 1;
   font-size: 1em;
 }
