@@ -72,7 +72,7 @@ export default defineComponent({
     today: () => moment(),
   },
 
-  mounted() {
+  beforeMount() {
     this.fetchBookingDefaults()
     this.fetchBookings()
   },
@@ -84,7 +84,7 @@ export default defineComponent({
   methods: {
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
-    ...mapActions("bookings", ["fetchBookingsByRoomAndTimespan"]),
+    ...mapActions("bookings", ["fetchBookingsForRange"]),
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
@@ -111,13 +111,9 @@ export default defineComponent({
       this.$emit("add-booking", booking)
     },
 
-    async mounted(){
-      await this.fetchBookings()
-    },
-
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndTimespan({roomId: this.bookingDefaults.room.id, from: this.dateScope[0], to: this.dateScope[4]})
+        await this.fetchBookingsForRange({roomId: this.bookingDefaults.room.id, from: this.dateScope[0], to: this.dateScope[4]})
       }
     },
   }
