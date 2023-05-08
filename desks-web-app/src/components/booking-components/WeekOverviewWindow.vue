@@ -113,7 +113,11 @@ export default defineComponent({
 
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsForRange({roomId: this.bookingDefaults.room.id, from: this.dateScope[0], to: this.dateScope[this.dateScope.length - 1]})
+        await this.fetchBookingsForRange({
+            roomId: this.bookingDefaults.room.id,
+            from: this.dateScope[0],
+            to: moment(this.dateScope[this.dateScope.length - 1]).endOf("day")
+        })
       }
     },
   }
