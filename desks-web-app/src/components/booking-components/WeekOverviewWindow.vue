@@ -1,13 +1,15 @@
 <template>
 
   <v-row>
-    <template v-for="n in 5" :key="n">
-      <v-col>
+    <template v-for="businessDay in dateScope" :key="businessDay">
+      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(businessDay)}" v-if="this.bookingDefaults">
+        <span id="dayNote" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
+        <span id="dayNote" v-else>Week {{businessDay.isoWeek()}}</span>
         <availability-card
             v-if="this.bookingDefaults"
-            :startOfDay="calculateNthDayOfWeek(n)"
+            :startOfDay="businessDay"
             :room="this.bookingDefaults.room"
-            @add-booking="bookForDay(calculateNthDayOfWeek(n))"
+            @add-booking="bookForDay(businessDay)"
         ></availability-card>
       </v-col>
     </template>
@@ -15,6 +17,34 @@
   </v-row>
 
 </template>
+<style>
+
+.days {
+  padding-block: 1em;
+}
+
+.monday {
+  border-left: 1px solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+}
+
+.days:first-child {
+  border-left: 0 solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+}
+
+
+#dayNote {
+  display: none;
+  margin-bottom: 1em;
+  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+  line-height: 1;
+  font-size: 1em;
+}
+
+.monday #dayNote, .days:first-child #dayNote {
+  display: block;
+}
+
+</style>
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 import {mapActions, mapGetters, mapState} from "vuex";
@@ -27,10 +57,10 @@ import AvailabilityCard from "@/components/booking-components/AvailabilityCard.v
 export default defineComponent({
   name: 'weekOverviewWindow',
   props:{
-    startOfWeek: {
-      type: Object as PropType<MomentInput>,
+    dateScope: {
+      type: Object as PropType<Moment[]>,
       required: true
-    },
+    }
   },
   components: {AvailabilityCard},
 
@@ -39,11 +69,12 @@ export default defineComponent({
     ...mapGetters("bookings", ["getBookingsByRoomAndDay"]),
     ...mapState("bookings", ["bookings"]),
     ...mapState('user', ['user']),
+    today: () => moment(),
   },
-  async mounted() {
 
-    await this.fetchBookingDefaults()
-    await this.fetchBookings()
+  beforeMount() {
+    this.fetchBookingDefaults()
+    this.fetchBookings()
   },
   watch: {
     async bookingDefaults() {
@@ -53,12 +84,12 @@ export default defineComponent({
   methods: {
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
-    ...mapActions("bookings", ["fetchBookingsByRoomAndWeek"]),
+    ...mapActions("bookings", ["fetchBookingsForRange"]),
 
     isDisabled: (startOfDay: Moment): boolean => startOfDay.isBefore(moment().startOf("day")),
 
-    calculateNthDayOfWeek(n: number): Moment {
-      return moment(this.startOfWeek).add(n, "day")
+    isMonday(day: Moment) {
+      return day.isoWeekday() === 1;
     },
 
     setDay(base:MomentInput, day: Moment): Moment{
@@ -80,13 +111,13 @@ export default defineComponent({
       this.$emit("add-booking", booking)
     },
 
-    async mounted(){
-      await this.fetchBookings()
-    },
-
     async fetchBookings() {
       if (this.bookingDefaults && this.bookingDefaults.room) {
-        await this.fetchBookingsByRoomAndWeek({roomId: this.bookingDefaults.room.id, date: this.startOfWeek})
+        await this.fetchBookingsForRange({
+            roomId: this.bookingDefaults.room.id,
+            from: this.dateScope[0],
+            to: moment(this.dateScope[this.dateScope.length - 1]).endOf("day")
+        })
       }
     },
   }
