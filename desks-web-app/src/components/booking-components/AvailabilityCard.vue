@@ -6,7 +6,7 @@
           :variant="isDisabled() || isLoading() ?'flat':'tonal'"
     >
     <template v-slot:append>
-      <v-btn icon="mdi-plus" elevation="0" @click="$emit('addBooking')"></v-btn>
+      <v-btn icon="mdi-plus" size="small" elevation="0" @click="$emit('addBooking')"></v-btn>
     </template>
     <template v-slot:title>
       {{ startOfDay.format("dddd") }}

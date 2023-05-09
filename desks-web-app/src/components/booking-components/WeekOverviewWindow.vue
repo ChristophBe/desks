@@ -93,16 +93,19 @@ export default defineComponent({
     },
 
     setDay(base:MomentInput, day: Moment): Moment{
-      return moment(base).set({'year': day.year(), 'month': day.month(),'day': day.day()});
+      const baseStartOfDay = moment(base).startOf("day")
+      const secondsFromStartOfDay = moment(base).diff(baseStartOfDay, "seconds")
+      return moment(day).startOf("day").add(secondsFromStartOfDay, "seconds");
     },
 
     bookForDay(startOfDay: Moment) {
-
+        console.log("startOfDay ", startOfDay.toISOString())
       let start = this.setDay(this.bookingDefaults.start, startOfDay);
       start = start.isBefore(moment.now()) ? BookingUtils.roundToNextFiveMinutes() : start
-
+        console.log("start ", start.toISOString())
       let end = this.setDay(this.bookingDefaults.end, startOfDay)
       end = end.isSameOrAfter(start) ? end : moment(start).add(1, "hour")
+        console.log("end ", end.toISOString())
       const booking: Partial<Booking> = {
         room: this.bookingDefaults.room,
         start: start.toDate(),
