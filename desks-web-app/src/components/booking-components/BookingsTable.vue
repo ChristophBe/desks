@@ -1,10 +1,12 @@
 <template>
-<v-row class="bookingsRow">
+<v-row class="bookingsRow justify-start flex-0-0">
   <v-col
       v-for="item in [...bookings].sort(compareBookingsByTime)"
-      :key="item.id">
+      :key="item.id"
+    class="bookingsCol">
     <v-card
         :variant="'flat'"
+        class="card"
     >
       <template v-slot:append>
         <v-btn icon elevation="0" >
@@ -83,5 +85,13 @@ export default defineComponent({
     min-width: 20%;
     width: fit-content;
   }
+}
+
+.bookingsCol {
+  flex-grow: 0;
+}
+
+.card {
+  width: max-content;
 }
 </style>
