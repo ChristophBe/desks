@@ -6,7 +6,7 @@
         <div class="dayNote">
           <span class="today" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
           <span class="week" v-else-if="isMonday(businessDay) || index == 0">Week {{businessDay.isoWeek()}}</span>
-          <span v-if="isHoliday(businessDay.startOf('day').toDate(), 'ALL')">{{ getHolidayByDate(businessDay.startOf('day').toDate(), 'ALL')!.name }}</span>
+          <span v-if="isHoliday(businessDay.startOf('day').toDate(), 'ALL')">{{ getHolidayByDate(businessDay.startOf('day').toDate(), 'ALL')!.name.toLowerCase() }}</span>
         </div>
         <availability-card
             v-if="this.bookingDefaults"
@@ -42,6 +42,7 @@
   color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
   line-height: 1;
   font-size: 1em;
+  text-transform: capitalize;
 }
 
 .dayNote span:has(~ span)::after {
