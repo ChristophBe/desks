@@ -106,7 +106,7 @@ export default defineComponent({
 
       return "success"
 
-    }
+    },
   }
 });
 </script>

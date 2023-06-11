@@ -41,19 +41,17 @@
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-card variant="flat">
             <v-card-text v-if="myUpcomingBookings.length <= 0">
               <v-alert>
                 You have no upcoming desk bookings.
               </v-alert>
             </v-card-text>
-            <BookingsTable
+            <BookingsCards
                 v-else
                 :bookings="myUpcomingBookings"
                 @editBooking="(booking) => openEditeBookingDialog(booking)"
                 @openBooking="(booking) => openShowBookingDialog(booking)"
-            ></BookingsTable>
-          </v-card>
+            ></BookingsCards>
         </v-col>
       </v-row>
 
@@ -68,7 +66,7 @@
 
 import {defineComponent} from "vue";
 import {mapActions, mapGetters, mapState} from "vuex";
-import BookingsTable from "@/components/booking-components/BookingsTable.vue";
+import BookingsCards from "@/components/booking-components/BookingsCards.vue";
 import Booking from "@/models/Booking";
 import BookingDetails from "@/components/booking-components/BookingDetails.vue";
 import BookingFormDialogue from "@/components/booking-components/BookingFormDialogue.vue";
@@ -88,7 +86,7 @@ interface bookingViewData {
 
 export default defineComponent({
   name: "BookingsView",
-  components: {DeskAvailabilty, BookingFormDialogue, BookingDetails, BookingsTable, Loading},
+  components: {DeskAvailabilty, BookingFormDialogue, BookingDetails, BookingsCards, Loading},
   data: (): bookingViewData => ({
     showBookingFormDialog: false,
     bookingToEdit: null,
