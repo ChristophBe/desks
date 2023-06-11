@@ -47,7 +47,7 @@ import {mapActions} from "vuex";
 import {Moment} from "moment";
 
 export default defineComponent({
-  name: "BookingsTable",
+  name: "BookingsCards",
   components: {BookingContextMenu},
   // type inference enabled
   props: {
