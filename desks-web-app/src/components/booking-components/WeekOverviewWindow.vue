@@ -1,10 +1,13 @@
 <template>
 
   <v-row>
-    <template v-for="businessDay in dateScope" :key="businessDay">
-      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(businessDay)}" v-if="this.bookingDefaults">
-        <span id="dayNote" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
-        <span id="dayNote" v-else>Week {{businessDay.isoWeek()}}</span>
+    <template v-for="(businessDay, index) in dateScope" :key="businessDay">
+      <v-col class="d-flex flex-column justify-end" :class="{days: true, monday: isMonday(businessDay), specialDay: isHoliday(businessDay.startOf('day').toDate(), 'ALL')}" v-if="this.bookingDefaults">
+        <div class="dayNote">
+          <span class="today" v-if="businessDay.startOf('day').isSame(today.startOf('day'), 'day')">Today</span>
+          <span class="week" v-else-if="isMonday(businessDay) || index == 0">Week {{businessDay.isoWeek()}}</span>
+          <span v-if="isHoliday(businessDay.startOf('day').toDate(), 'ALL')">{{ getHolidayByDate(businessDay.startOf('day').toDate(), 'ALL')!.name.toLowerCase() }}</span>
+        </div>
         <availability-card
             v-if="this.bookingDefaults"
             :startOfDay="businessDay"
@@ -23,7 +26,7 @@
   padding-block: 1em;
 }
 
-.monday {
+.days:has(.week) {
   border-left: 1px solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
@@ -31,18 +34,22 @@
   border-left: 0 solid rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
-
-#dayNote {
-  display: none;
+.dayNote {
+  --gap: 0.5rem;
+  display: flex;
+  gap: var(--gap);
   margin-bottom: 1em;
   color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
   line-height: 1;
   font-size: 1em;
+  text-transform: capitalize;
 }
 
-.monday #dayNote, .days:first-child #dayNote {
-  display: block;
+.dayNote span:has(~ span)::after {
+  content: '-';
+  padding-left: var(--gap);
 }
+
 
 </style>
 <script lang="ts">
@@ -53,6 +60,7 @@ import BookingUtils from "@/utils/booking-utils";
 import Booking from "@/models/Booking";
 import {Moment, MomentInput} from "moment";
 import AvailabilityCard from "@/components/booking-components/AvailabilityCard.vue"
+import {getHolidayByDate, getHolidays, isHoliday} from "feiertagejs";
 
 export default defineComponent({
   name: 'weekOverviewWindow',
@@ -82,6 +90,8 @@ export default defineComponent({
     },
   },
   methods: {
+    getHolidayByDate,
+    isHoliday,
 
     ...mapActions("defaults", ["fetchBookingDefaults"]),
     ...mapActions("bookings", ["fetchBookingsForRange"]),
