@@ -18,7 +18,7 @@
         Today
       </template>
       <template v-slot:title v-else-if="dateConverter(item.start).isSameOrBefore(dateConverter(item.start).add(1, 'week'))">
-        {{ dateConverter(item.start).format("dddd") }}
+        {{ dateConverter(item.start).format("DD.MM.YYYY") }}
       </template>
       <template v-slot:title v-else>
         {{ $format.date(item.start) }}
